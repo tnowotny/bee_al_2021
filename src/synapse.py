@@ -81,7 +81,7 @@ orns_pns_connect = create_custom_sparse_connect_init_snippet_class(
 """
 Parameter values for the ORN to LN synapse
 """
-orns_lns_params = {
+orns_lns_ini = {
     "g": 1.0     # weight in (muS?)
     }
 
