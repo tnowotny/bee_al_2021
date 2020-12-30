@@ -35,8 +35,8 @@ ors_orns_connect = create_custom_sparse_connect_init_snippet_class(
         """
         const unsigned int row_length= $(num_post)/$(num_pre);
         const unsigned int offset= $(id_pre)*row_length;
-        for (unsigned int i= 0; i < row_length; i++) {
-            $(addSynapse, (offset + i));
+        for (unsigned int __i= 0; __i < row_length; __i++) {
+            $(addSynapse, (offset + __i));
         }
         $(endRow);
         """,
