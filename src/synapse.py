@@ -63,14 +63,14 @@ orns_pns_post_params = {
 """
 Connectivity init snippet for connectivity from ORNs to PNs.
 """
-orns_pns_connect = create_custom_sparse_connect_init_snippet_class(
-    "orn_pn_type_specific",
-    param_names= ["n_orn", "n_pn"],
+orns_al_connect = create_custom_sparse_connect_init_snippet_class(
+    "orn_al_type_specific",
+    param_names= ["n_orn", "n_trg"],
     row_build_code=
         """
         unsigned int glo= (unsigned int) $(id_pre)/$(n_orn);
         unsigned int local_id= $(id_pre) - glo*$(n_orn);
-        $(addSynapse, ((unsigned int) local_id/((unsigned int) ($(n_orn)/$(n_pn)))));
+        $(addSynapse, ((unsigned int) local_id/((unsigned int) ($(n_orn)/$(n_trg)))));
         $(endRow);
         """,
     calc_max_row_len_func=create_cmlf_class(
@@ -92,5 +92,57 @@ Parameter values for the ORN to LN post-synapse
 orns_lns_post_params = {
     "tau": 10.0,     # decay timescale in (ms)
     "E": 0.0         # reversal potential in (mV)
+    }
+
+"""
+Connectivity init snippet for connectivity from PNs to LNs. Each PN connects to all LN in its glomerulus
+"""
+pns_lns_connect = create_custom_sparse_connect_init_snippet_class(
+    "pns_lns_within_glo",
+    param_names= ["n_pn", "n_ln"],
+    row_build_code=
+        """
+        const unsigned int offset= (unsigned int) $(id_pre)/((unsigned int) $(n_pn))*$(n_ln);
+        for (unsigned int k= 0; k < $(n_ln); k++) {
+        $(addSynapse, (offset+k));
+        }
+        $(endRow);
+        """,
+    calc_max_row_len_func=create_cmlf_class(
+        lambda num_pre, num_post, pars: int(pars[1]))()
+)
+
+
+"""
+Parameter values for the PN to LN synapse
+"""
+pns_lns_ini = {
+    "g": 0.1     # weight in (muS?)
+    }
+
+
+"""
+Parameter values for the ORN to LN post-synapse
+"""
+pns_lns_post_params = {
+    "tau": 10.0,     # decay timescale in (ms)
+    "E": 0.0       # reversal potential in (mV)
+    }
+
+
+"""
+Parameter values for the LN to PN synapse
+"""
+lns_pns_ini = {
+    "g": 0.1     # weight in (muS?)
+    }
+
+
+"""
+Parameter values for the LN to PN post-synapse
+"""
+lns_pns_post_params = {
+    "tau": 20.0,     # decay timescale in (ms)
+    "E": -80.0       # reversal potential in (mV)
     }
 
