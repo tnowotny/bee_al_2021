@@ -160,20 +160,20 @@ np.save(file, ornSpkID)
 file.close
 
 sigma= 100.0
-sdfs= make_sdf(ornSpkt, ornSpkID, np.arange(0,160), -3*sigma, t_total+3*sigma, 1.0, sigma)
+NORN= n_glo*n_orn
+sdfs= make_sdf(ornSpkt, ornSpkID, np.arange(0,NORN), -3*sigma, t_total+3*sigma, 1.0, sigma)
 plt.figure()
-plt.imshow(sdfs, extent=[-3*sigma,t_total+3*sigma,0,160], aspect='auto')
+plt.imshow(sdfs, extent=[-3*sigma,t_total+3*sigma,0,NORN], aspect='auto')
 plt.colorbar()
-plt.savefig(dirname+"ORNsdfmap_"+cstr+".png",dpi=300)
+plt.savefig("ORNsdfmap_"+cstr+".png",dpi=300)
 
 figure, axes= plt.subplots(6, sharey= True)
 t_array= np.arange(-3*sigma, t_total+3*sigma, 1.0)
 j= 0
-for i in range(74,86,2):
-    axes[j].plot(t_array, sdfs[i*n_orn,:])
+for i in range(74*n_orn,86*n_orn,2*n_orn):
+    axes[j].plot(t_array, sdfs[i,:])
     j= j+1
-plt.savefig(dirname+"ornSDFtraces_"+cstr+".png",dpi=300)
-
+plt.savefig("ornSDFtraces_"+cstr+".png",dpi=300)
 
 # Show plot
-plt.show()
+# plt.show()
