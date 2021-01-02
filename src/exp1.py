@@ -1,16 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-import os
 from helper import *
+from ALsim import ALsim
+from exp1_plots import exp1_plots
 
-# prepare writing results sensibly
+# write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
 dirname= timestr+"-runs"
-path = os.path.isdir(dirname)
-if not path:
-    os.makedirs(dirname)
-dirname=dirname+"/"
 
 n_glo= 160
 n= {
@@ -25,8 +22,6 @@ N= {
     "LNs": n_glo*n["LNs"]
 }
 
-dt_sdf= 1.0
-sigma_sdf= 300.0
 t_total= 20000.0
 
 rec_state= [
@@ -55,14 +50,12 @@ plot_sdf= {
     }
 
 label= "1e-6_n07"
-concentration= 1e-6
 hill_exp= 0.7
 
 od= gauss_odor(n_glo, 80, 10)
 odors= od
 od= gauss_odor(n_glo, 90, 10)
 odors= np.vstack((odors, od))
-
    
 protocol= [
     {
@@ -114,4 +107,8 @@ protocol= [
         "concentration": 0.0
         }
     ]
-    
+
+if __name__ == "__main__":
+    state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label)
+
+    exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, n_glo, n, N, dirname, label)

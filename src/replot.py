@@ -1,6 +1,7 @@
 import numpy as np
 from helper import *
 from exp1 import *
+from exp1_plots import exp1_plots
 
 # Prepare variables for recording results
 state_bufs= dict()
@@ -23,4 +24,4 @@ for pop in rec_spikes:
     spike_ID[pop]= np.load(file)
     file.close()
 
-with open('exp1_plots.py') as f: exec(f.read())
+exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, n_glo, n, N, dirname, label)
