@@ -2,11 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from helper import *
 
-cstr="1e-3_n05"
-file = open("2020-12-30-runs/ornSpkt_"+cstr+".bin", "rb")
+cstr="1e-6_n05"
+file = open("2020-12-31-runs/ornSpkt_"+cstr+".bin", "rb")
 ornSpkt = np.load(file)
 file.close()
-file = open("2020-12-30-runs/ornSpkID_"+cstr+".bin", "rb")
+file = open("2020-12-31-runs/ornSpkID_"+cstr+".bin", "rb")
 ornSpkID = np.load(file)
 file.close()
 

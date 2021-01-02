@@ -23,7 +23,7 @@ orn_params = {"V_reset": -70.0,
               "V_leak": -60.0,
               "g_leak": 0.01,
               "r_scale": 5.0,
-              "g_adapt": 0.02,
+              "g_adapt": 0.01,
               "V_adapt": -70.0,
               "tau_adapt": 1000.0,
               "noise_A": 3.0
@@ -38,10 +38,10 @@ pn_params = {"V_reset": -70.0,
               "V_thresh": -35.0,
               "V_leak": -60.0,
               "g_leak": 0.01,
-              "r_scale": 20.0,
-              "g_adapt": 0.02,
-              "V_adapt": -60.0,
-              "tau_adapt": 50.0,
+              "r_scale": 1.0,
+              "g_adapt": 0.01,
+              "V_adapt": -70.0,
+              "tau_adapt": 1000.0,
               "noise_A": 1.0
               }
 
@@ -54,10 +54,10 @@ ln_params = {"V_reset": -70.0,
               "V_thresh": -35.0,
               "V_leak": -60.0,
               "g_leak": 0.01,
-              "r_scale": 20.0,
-              "g_adapt": 0.02,
-              "V_adapt": -60.0,
-              "tau_adapt": 50.0,
+              "r_scale": 1.0,
+              "g_adapt": 0.01,
+              "V_adapt": -70.0,
+              "tau_adapt": 1000.0,
               "noise_A": 1.0
               }
 

@@ -8,16 +8,8 @@ from OR import (or_model, or_params, or_ini)
 from synapse import *
 from neuron import *
 from helper import *
-import time
-import os
 
-# prepare writing results sensibly
-timestr = time.strftime("%Y-%m-%d")
-dirname= timestr+"-runs"
-path = os.path.isdir(dirname)
-if not path:
-    os.makedirs(dirname)
-dirname=dirname+"/"
+from exp1 import *
 
 # Create a single-precision GeNN model
 model = GeNNModel("double", "honeyAL"#, backend="SingleThreadedCPU"
@@ -26,25 +18,13 @@ model = GeNNModel("double", "honeyAL"#, backend="SingleThreadedCPU"
 # Set simulation timestep to 0.1ms
 model.dT = 0.5
 
-
-# number of glomeruli
-#n_glo= 2
-# number of ORNs per glomerulus
-#n_orn= 600
-# number of PNs per glomerulus
-#n_pn= 5
-# number of LNs per glomerulus
-#n_ln= 1
-
-from exp1 import *
-
 # Add neuron populations and current source to model
 ors = model.add_neuron_population("ORs", n_glo, or_model, or_params, or_ini)
-orns = model.add_neuron_population("ORNs", n_glo*n_orn, adaptive_LIF, orn_params, orn_ini)
-if n_pn > 0:
-    pns= model.add_neuron_population("PNs", n_glo*n_pn, adaptive_LIF, pn_params, pn_ini)
-if n_ln > 0:
-    lns= model.add_neuron_population("LNs", n_glo*n_ln, adaptive_LIF, ln_params, ln_ini)
+orns = model.add_neuron_population("ORNs", n_glo*n["ORNs"], adaptive_LIF, orn_params, orn_ini)
+if n["PNs"] > 0:
+    pns= model.add_neuron_population("PNs", n_glo*n["PNs"], adaptive_LIF, pn_params, pn_ini)
+if n["LNs"] > 0:
+    lns= model.add_neuron_population("LNs", n_glo*n["LNs"], adaptive_LIF, ln_params, ln_ini)
 
 # Connect ORs to ORNs
 ors_orns = model.add_synapse_population("ORs_ORNs", "SPARSE_GLOBALG", genn_wrapper.NO_DELAY,
@@ -55,125 +35,135 @@ ors_orns = model.add_synapse_population("ORs_ORNs", "SPARSE_GLOBALG", genn_wrapp
                                         )
 
 # Connect ORNs to PNs
-if n_pn > 0:
+if n["PNs"] > 0:
     orns_pns = model.add_synapse_population("ORNs_PNs", "SPARSE_GLOBALG", genn_wrapper.NO_DELAY,
                                             orns, pns,
                                             "StaticPulse", {}, orns_pns_ini, {}, {},
                                             "ExpCond", orns_pns_post_params, {},
-                                            init_connectivity(orns_al_connect, {"n_orn": n_orn, "n_trg": n_pn})
+                                            init_connectivity(orns_al_connect, {"n_orn": n["ORNs"], "n_trg": n["PNs"]})
                                             )
 
 # Connect ORNs to LNs
-if n_ln > 0:
+if n["LNs"] > 0:
     orns_lns = model.add_synapse_population("ORNs_LNs", "SPARSE_GLOBALG", genn_wrapper.NO_DELAY,
                                             orns, lns,
                                             "StaticPulse", {}, orns_lns_ini, {}, {},
                                             "ExpCond", orns_lns_post_params, {},
-                                            init_connectivity(orns_al_connect, {"n_orn": n_orn, "n_trg": n_ln})
+                                            init_connectivity(orns_al_connect, {"n_orn": n["ORNs"], "n_trg": n["LNs"]})
                                             )
     
 
 # Connect PNs to LNs
-if n_ln > 0 and n_pn > 0:
+if n["LNs"] > 0 and n["PNs"] > 0:
     lns_pns =  model.add_synapse_population("PNs_LNs", "SPARSE_GLOBALG", genn_wrapper.NO_DELAY,
                                             pns, lns,
                                             "StaticPulse", {}, pns_lns_ini, {}, {},
                                             "ExpCond", pns_lns_post_params, {},
-                                            init_connectivity(pns_lns_connect, {"n_pn": n_pn, "n_ln": n_ln})
+                                            init_connectivity(pns_lns_connect, {"n_pn": n["PNs"], "n_ln": n["LNs"]})
                                             )
 # Connect LNs to PNs
-if n_ln > 0 and n_pn > 0:
+if n["LNs"] > 0 and n["PNs"] > 0:
     lns_pns =  model.add_synapse_population("LNs_PNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
                                             lns, pns,
                                             "StaticPulse", {}, lns_pns_ini, {}, {},
                                             "ExpCond", lns_pns_post_params, {}
                                             )
+    
                                             
+# Connect LNs to LNs
+if n["LNs"] > 0:
+    lns_lns =  model.add_synapse_population("LNs_LNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
+                                            lns, lns,
+                                            "StaticPulse", {}, lns_lns_ini, {}, {},
+                                            "ExpCond", lns_lns_post_params, {}
+                                            )
 
+    print("building model ...");
 # Build and load model
 model.build()
 model.load()
 
-# Create a numpy view to efficiently access the membrane voltage from Python
-r0_view = ors.vars["r0"].view
-ra_view = ors.vars["ra"].view
-v_view= orns.vars["V"].view
-a_view= orns.vars["a"].view
+if n["LNs"] > 0 and n["PNs"] > 0:
+    # do not inhibit own PN
+    g= lns_pns.vars["g"].view
+    for i in range(0,n_glo):
+        off1= i*n["LNs"]    # first row of this glomerulus   
+        for j in range(off1, off1+n["LNs"]):
+            off2= i*n["PNs"]    # first column of this glomerulus    
+            for k in range(off2, off2+n["PNs"]):
+                id= j*(n_glo*n["PNs"])+k
+                g[id]= 0.0
 
+if n["LNs"] > 0:
+    # do not inhibit LN in own glomerulus
+    g= lns_lns.vars["g"].view
+    for i in range(0,n_glo):
+        off1= i*n["LNs"]    # first row of this glomerulus   
+        for j in range(off1, off1+n["LNs"]):
+            off2= i*n["LNs"]    # first column of this glomerulus    
+            for k in range(off2, off2+n["LNs"]):
+                id= j*(n_glo*n["LNs"])+k
+                g[id]= 0.0
+    
+# Prepare variables for recording results
+state_views= dict()
+state_bufs= dict()
+state_pops= np.unique([k for k,i in rec_state])
+for pop, var in rec_state:
+    lbl= pop+"_"+var
+    state_views[lbl]= model.neuron_populations[pop].vars[var].view
+    state_bufs[lbl]= None
+
+spike_t= dict()
+spike_ID= dict()
+for pop in rec_spikes:
+    spike_t[pop]= None
+    spike_ID[pop]= None
+    
 # Simulate
-r0 = None
-ra = None
-v= None
-a= None
-ornSpkt= None
-ornSpkID= None
-t_total= 5000.0
-cstr= "1e-3_n05"
+prot_pos= 0
 while model.t < t_total:
-    if (np.abs(model.t - 1000.0) < 1e-5):
-        set_odor_simple(ors, "0", odors[0,:], 1e-3, 0.5)
+    if prot_pos < len(protocol) and model.t >= protocol[prot_pos]["t"]:
+        tp= protocol[prot_pos]
+        set_odor_simple(ors, tp["ochn"], odors[tp["odor"],:], tp["concentration"], hill_exp)
         model.push_state_to_device("ORs")
-        print("odor set")
-    if (np.abs(model.t - 4000.0) < 1e-5):
-        set_odor_simple(ors, "0", odors[0,:], 0.0, 0.5)
-        model.push_state_to_device("ORs")
-        print("odor removed")
+        prot_pos+= 1
     model.step_time()
     if int(model.t/model.dT)%1000 == 0:
         print(model.t)
-    model.pull_state_from_device("ORs")
-    model.pull_state_from_device("ORNs")
-    r0 = np.copy(r0_view) if r0 is None else np.vstack((r0, r0_view))
-    ra = np.copy(ra_view) if ra is None else np.vstack((ra, ra_view))
-    v= np.copy(v_view) if v is None else np.vstack((v, v_view))
-    a= np.copy(a_view) if a is None else np.vstack((a, a_view))
-    orns.pull_current_spikes_from_device()
-    if (orns.spike_count[0] > 0):
-        n= orns.spike_count[0]
-        ornSpkt= np.copy(model.t*np.ones(n)) if ornSpkt is None else np.hstack((ornSpkt, model.t*np.ones(n)))
-        ornSpkID= np.copy(orns.spikes[0:n]) if ornSpkID is None else np.hstack((ornSpkID, orns.spikes[0:n]))
+    
+    for pop in state_pops:
+        model.pull_state_from_device(pop)
+    
+    for p in state_bufs:
+        state_bufs[p]= np.copy(state_views[p]) if state_bufs[p] is None else np.vstack((state_bufs[p], state_views[p]))
 
-plt.figure
-plt.plot(ornSpkt, ornSpkID, '.')
-plt.savefig(dirname+"spikes_"+cstr+".png",dpi=300)
+    for pop in rec_spikes:
+        the_pop= model.neuron_populations[pop]
+        the_pop.pull_current_spikes_from_device()
+        if (the_pop.spike_count[0] > 0):
+            ln= the_pop.spike_count[0]
+            spike_t[pop]= np.copy(model.t*np.ones(ln)) if spike_t[pop] is None else np.hstack((spike_t[pop], model.t*np.ones(ln)))
+            spike_ID[pop]= np.copy(the_pop.spikes[0:ln]) if spike_ID[pop] is None else np.hstack((spike_ID[pop], the_pop.spikes[0:ln]))
 
-figure, axes= plt.subplots(3)
 
-t_array= np.arange(0.0, t_total, model.dT)
-for i in range(78,82):
-    axes[0].plot(t_array, ra[:,i])
-    axes[0].plot(t_array, r0[:,i])
-    axes[1].plot(t_array, v[:,i*n_orn])
-    axes[2].plot(t_array, a[:,i*n_orn])
-plt.savefig(dirname+"rawTraces_"+cstr+".png",dpi=300)
+# Saving results
+if state_bufs:
+    # only save the time array if anything is being saved
+    t_array= np.arange(0.0,t_total,model.dT)
+    file= open(dirname+label+"_t.bin", "wb")
+    np.save(file, t_array)
+    for p in state_bufs:
+        file= open(dirname+label+"_"+p+".bin", "wb")
+        np.save(file, state_bufs[p])
+        file.close()
+        
+for pop in rec_spikes:
+    file= open(dirname+label+pop+"_spike_t.bin", "wb")
+    np.save(file, spike_t[pop])
+    file.close()
+    file= open(dirname+label+pop+"_spike_ID.bin", "wb")
+    np.save(file, spike_ID[pop])
+    file.close()
 
-plt.figure()
-plt.imshow(np.transpose(ra), extent=[0,50000,0,160], aspect='auto')
-plt.colorbar()
-plt.savefig(dirname+"ORcmap_"+cstr+".png",dpi=300)
-
-file = open(dirname+"ornSpkt_"+cstr+".bin", "wb")
-np.save(file, ornSpkt)
-file.close
-file = open(dirname+"ornSpkID_"+cstr+".bin", "wb")
-np.save(file, ornSpkID)
-file.close
-
-sigma= 100.0
-NORN= n_glo*n_orn
-sdfs= make_sdf(ornSpkt, ornSpkID, np.arange(0,NORN), -3*sigma, t_total+3*sigma, 1.0, sigma)
-plt.figure()
-plt.imshow(sdfs, extent=[-3*sigma,t_total+3*sigma,0,NORN], aspect='auto')
-plt.colorbar()
-plt.savefig("ORNsdfmap_"+cstr+".png",dpi=300)
-
-figure, axes= plt.subplots(6, sharey= True)
-t_array= np.arange(-3*sigma, t_total+3*sigma, 1.0)
-j= 0
-for i in range(74*n_orn,86*n_orn,2*n_orn):
-    axes[j].plot(t_array, sdfs[i,:])
-    j= j+1
-plt.savefig("ornSDFtraces_"+cstr+".png",dpi=300)
-
-# Show plot
-# plt.show()
+with open('exp1_plots.py') as f: exec(f.read())

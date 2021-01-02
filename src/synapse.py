@@ -48,7 +48,7 @@ ors_orns_connect = create_custom_sparse_connect_init_snippet_class(
 Parameter values for the ORN to PN synapse
 """
 orns_pns_ini = {
-    "g": 1.0     
+    "g": 0.045     # weight in (muS?)     
     }
 
 
@@ -68,9 +68,12 @@ orns_al_connect = create_custom_sparse_connect_init_snippet_class(
     param_names= ["n_orn", "n_trg"],
     row_build_code=
         """
-        unsigned int glo= (unsigned int) $(id_pre)/$(n_orn);
-        unsigned int local_id= $(id_pre) - glo*$(n_orn);
-        $(addSynapse, ((unsigned int) local_id/((unsigned int) ($(n_orn)/$(n_trg)))));
+        unsigned int _n_orn= (unsigned int) $(n_orn);
+        unsigned int _n_trg= (unsigned int) $(n_trg);
+        unsigned int glo= $(id_pre)/_n_orn;
+        unsigned int offset= glo*_n_trg;
+        unsigned int local_id= $(id_pre) - glo*_n_orn; 
+        $(addSynapse, (offset+local_id/(_n_orn/_n_trg)));
         $(endRow);
         """,
     calc_max_row_len_func=create_cmlf_class(
@@ -82,7 +85,7 @@ orns_al_connect = create_custom_sparse_connect_init_snippet_class(
 Parameter values for the ORN to LN synapse
 """
 orns_lns_ini = {
-    "g": 1.0     # weight in (muS?)
+    "g": 0.01     # weight in (muS?)
     }
 
 
@@ -117,7 +120,7 @@ pns_lns_connect = create_custom_sparse_connect_init_snippet_class(
 Parameter values for the PN to LN synapse
 """
 pns_lns_ini = {
-    "g": 0.1     # weight in (muS?)
+    "g": 0.02     # weight in (muS?)
     }
 
 
@@ -134,7 +137,7 @@ pns_lns_post_params = {
 Parameter values for the LN to PN synapse
 """
 lns_pns_ini = {
-    "g": 0.1     # weight in (muS?)
+    "g": 0.02     # weight in (muS?)
     }
 
 
@@ -142,6 +145,22 @@ lns_pns_ini = {
 Parameter values for the LN to PN post-synapse
 """
 lns_pns_post_params = {
+    "tau": 20.0,     # decay timescale in (ms)
+    "E": -80.0       # reversal potential in (mV)
+    }
+
+"""
+Parameter values for the LN to PN synapse
+"""
+lns_lns_ini = {
+    "g": 0.01     # weight in (muS?)
+    }
+
+
+"""
+Parameter values for the LN to PN post-synapse
+"""
+lns_lns_post_params = {
     "tau": 20.0,     # decay timescale in (ms)
     "E": -80.0       # reversal potential in (mV)
     }
