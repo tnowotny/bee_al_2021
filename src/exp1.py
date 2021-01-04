@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 from helper import *
-from ALsim import ALsim
 from exp1_plots import exp1_plots
+from ALsim import ALsim
 
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
@@ -22,7 +22,9 @@ N= {
     "LNs": n_glo*n["LNs"]
 }
 
+
 t_total= 20000.0
+dt= 0.5
 
 rec_state= [
 #    ("ORs", "ra"),
@@ -109,6 +111,6 @@ protocol= [
     ]
 
 if __name__ == "__main__":
-    state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label)
+    state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label)
 
-    exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, n_glo, n, N, dirname, label)
+    exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, dt, n_glo, n, N, dirname, label)

@@ -1,4 +1,4 @@
-from pygenn.genn_model import create_custom_weight_update_class, create_custom_postsynaptic_class, create_custom_sparse_connect_init_snippet_class, create_cmlf_class
+from pygenn.genn_model import create_custom_weight_update_class, create_custom_postsynaptic_class, create_custom_sparse_connect_init_snippet_class, create_cmlf_class, create_custom_init_var_snippet_class, init_var
 import numpy as np
 
 """ 
@@ -134,11 +134,25 @@ pns_lns_post_params = {
 
 
 """
+init var snippet for initializing dense LN to PN connections
+"""
+lns_pns_conn_init = create_custom_init_var_snippet_class(
+    "lns_pns_conn_init",
+    param_names=["n_ln", "n_pn", "g"],
+    var_init_code=
+    """
+    const unsigned int npn= (unsigned int) $(n_pn);
+    const unsigned int nln= (unsigned int) $(n_ln);
+    $(value)=($(id_pre)/nln == $(id_post)/npn) ? 0.0 : $(g);
+    """
+)
+
+
+"""
 Parameter values for the LN to PN synapse
 """
-lns_pns_ini = {
-    "g": 0.02     # weight in (muS?)
-    }
+lns_pns_g= 0.02
+
 
 
 """
@@ -150,15 +164,27 @@ lns_pns_post_params = {
     }
 
 """
-Parameter values for the LN to PN synapse
+init var snippet for initializing dense LN to PN connections
 """
-lns_lns_ini = {
-    "g": 0.01     # weight in (muS?)
-    }
+lns_lns_conn_init = create_custom_init_var_snippet_class(
+    "lns_lns_conn_init",
+    param_names=["n_ln", "g"],
+    var_init_code=
+    """
+    const unsigned int nln= (unsigned int) $(n_ln);
+    $(value)=($(id_pre)/nln == $(id_post)/nln) ? 0.0 : $(g);
+    """
+)
 
 
 """
-Parameter values for the LN to PN post-synapse
+Parameter values for the LN to LN synapse
+"""
+lns_lns_g= 0.01
+
+
+"""
+Parameter values for the LN to LN post-synapse
 """
 lns_lns_post_params = {
     "tau": 20.0,     # decay timescale in (ms)

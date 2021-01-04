@@ -8,6 +8,7 @@ state_bufs= dict()
 state_pops= np.unique([k for k,i in rec_state])
 # file= open(dirname+label+"_t.bin", "rb")
 # t_array= np.load(file)
+dirname= dirname+"/"
 for pop, var in rec_state:
     lbl= pop+"_"+var
     file= open(dirname+label+"_"+lbl+".bin", "rb")
@@ -24,4 +25,4 @@ for pop in rec_spikes:
     spike_ID[pop]= np.load(file)
     file.close()
 
-exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, n_glo, n, N, dirname, label)
+exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, dt, n_glo, n, N, dirname, label)
