@@ -48,7 +48,6 @@ def exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, dt
 
         if n[pop] > 1:
             sdfs= make_sdf(spike_t[pop], spike_ID[pop]//n[pop], np.arange(0,n_glo), -3*sigma_sdf, t_total+3*sigma_sdf, dt_sdf, sigma_sdf)
-            print(sdfs.shape)
             plt.figure()
             plt.imshow(sdfs/n[pop], extent=[-3*sigma_sdf,t_total+3*sigma_sdf,0,n_glo], aspect='auto')
             plt.title("average SDF of "+pop+" in each glomerulus")
