@@ -3,9 +3,10 @@ import numpy as np
 from helper import *
 
 def exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, dt, n_glo, n, N, dirname, label):
+    dirname= dirname+"/"
     dt_sdf= 1.0
     sigma_sdf= 300.0
-
+    
     # Doing some plots
     for pop in plot_raster:
         plt.figure()
