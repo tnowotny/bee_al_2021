@@ -48,7 +48,7 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
                                                 orns, pns,
                                                 "StaticPulse", {}, orns_pns_ini, {}, {},
                                                 "ExpCond", orns_pns_post_params, {},
-                                                init_connectivity(orns_al_connect, {"n_orn": n["ORNs"], "n_trg": n["PNs"]})
+                                                init_connectivity(orns_al_connect, {"n_orn": n["ORNs"], "n_trg": n["PNs"], "p_c": p_orn_pn})
                                                 )
 
     # Connect ORNs to LNs
@@ -57,7 +57,7 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
                                                 orns, lns,
                                                 "StaticPulse", {}, orns_lns_ini, {}, {},
                                                 "ExpCond", orns_lns_post_params, {},
-                                                init_connectivity(orns_al_connect, {"n_orn": n["ORNs"], "n_trg": n["LNs"]})
+                                                init_connectivity(orns_al_connect, {"n_orn": n["ORNs"], "n_trg": n["LNs"], "p_c": p_orn_ln})
                                                 )
     # Connect PNs to LNs
     if n["LNs"] > 0 and n["PNs"] > 0:

@@ -44,11 +44,13 @@ ors_orns_connect = create_custom_sparse_connect_init_snippet_class(
         lambda num_pre, num_post, pars: int(num_post/num_pre))()
 )
 
+p_orn_pn= 0.5
+
 """
-Parameter values for the ORN to PN synapse
+Initial values for the ORN to PN synapse
 """
 orns_pns_ini = {
-    "g": 0.045     # weight in (muS?)     
+    "g": 0.01/p_orn_pn     # weight in (muS?)     
     }
 
 
@@ -63,29 +65,35 @@ orns_pns_post_params = {
 """
 Connectivity init snippet for connectivity from ORNs to PNs.
 """
+
+def row_length(num_pre, num_post, pars):
+    return int(pars[1]*pars[2]+3*np.sqrt(pars[1]*pars[2]*(1-pars[2])))
+
 orns_al_connect = create_custom_sparse_connect_init_snippet_class(
     "orn_al_type_specific",
-    param_names= ["n_orn", "n_trg"],
+    param_names= ["n_orn", "n_trg", "p_c"],
     row_build_code=
         """
-        unsigned int _n_orn= (unsigned int) $(n_orn);
-        unsigned int _n_trg= (unsigned int) $(n_trg);
-        unsigned int glo= $(id_pre)/_n_orn;
-        unsigned int offset= glo*_n_trg;
-        unsigned int local_id= $(id_pre) - glo*_n_orn; 
-        $(addSynapse, (offset+local_id/(_n_orn/_n_trg)));
+        unsigned int glo= $(id_pre)/((unsigned int) $(n_orn));
+        unsigned int offset= $(n_trg)*glo;
+        for (unsigned int k= offset; k < offset+$(n_trg); k++) {
+          if ($(gennrand_uniform) < $(p_c)) {
+            $(addSynapse, k);
+          }
+        }
         $(endRow);
         """,
     calc_max_row_len_func=create_cmlf_class(
-        lambda num_pre, num_post, pars: 1)()
+        row_length)()
 )
 
+p_orn_ln= 0.5   
 
 """
 Parameter values for the ORN to LN synapse
 """
 orns_lns_ini = {
-    "g": 0.01     # weight in (muS?)
+    "g": 0.01/p_orn_ln     # weight in (muS?)
     }
 
 
@@ -97,6 +105,7 @@ orns_lns_post_params = {
     "E": 0.0         # reversal potential in (mV)
     }
 
+    
 """
 Connectivity init snippet for connectivity from PNs to LNs. Each PN connects to all LN in its glomerulus
 """
@@ -120,7 +129,7 @@ pns_lns_connect = create_custom_sparse_connect_init_snippet_class(
 Parameter values for the PN to LN synapse
 """
 pns_lns_ini = {
-    "g": 0.02     # weight in (muS?)
+    "g": 0.001     # weight in (muS?)
     }
 
 
@@ -151,9 +160,7 @@ lns_pns_conn_init = create_custom_init_var_snippet_class(
 """
 Parameter values for the LN to PN synapse
 """
-lns_pns_g= 0.02
-
-
+lns_pns_g= 0.0008
 
 """
 Parameter values for the LN to PN post-synapse
@@ -180,7 +187,7 @@ lns_lns_conn_init = create_custom_init_var_snippet_class(
 """
 Parameter values for the LN to LN synapse
 """
-lns_lns_g= 0.01
+lns_lns_g= 0.0002
 
 
 """
