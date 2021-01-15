@@ -44,13 +44,13 @@ ors_orns_connect = create_custom_sparse_connect_init_snippet_class(
         lambda num_pre, num_post, pars: int(num_post/num_pre))()
 )
 
-p_orn_pn= 0.5
+n_orn_pn= 12
 
 """
 Initial values for the ORN to PN synapse
 """
 orns_pns_ini = {
-    "g": 0.01/p_orn_pn     # weight in (muS?)     
+    "g": 0.3/n_orn_pn     # weight in (muS?)     
     }
 
 
@@ -66,34 +66,32 @@ orns_pns_post_params = {
 Connectivity init snippet for connectivity from ORNs to PNs.
 """
 
-def row_length(num_pre, num_post, pars):
-    return int(pars[1]*pars[2]+3*np.sqrt(pars[1]*pars[2]*(1-pars[2])))
-
 orns_al_connect = create_custom_sparse_connect_init_snippet_class(
     "orn_al_type_specific",
-    param_names= ["n_orn", "n_trg", "p_c"],
-    row_build_code=
+    param_names= ["n_orn", "n_trg", "n_pre"],
+    col_build_code=
         """
-        unsigned int glo= $(id_pre)/((unsigned int) $(n_orn));
-        unsigned int offset= $(n_trg)*glo;
-        for (unsigned int k= offset; k < offset+$(n_trg); k++) {
-          if ($(gennrand_uniform) < $(p_c)) {
-            $(addSynapse, k);
-          }
+        if (c == 0) {
+        $(endCol);
         }
-        $(endRow);
+        const unsigned int glo= $(id_post)/((unsigned int) $(n_trg));
+        const unsigned int offset= $(n_orn)*glo;
+        const unsigned int tid= $(gennrand_uniform)*$(n_orn);
+        $(addSynapse, offset+tid+$(id_pre_begin));
+        c--;
         """,
-    calc_max_row_len_func=create_cmlf_class(
-        row_length)()
+    col_build_state_vars= {("c", "unsigned int", "$(n_pre)")},
+    calc_max_col_len_func=create_cmlf_class(
+        lambda num_pre, num_post, pars: int(pars[2]))()
 )
 
-p_orn_ln= 0.5   
+n_orn_ln= 12   
 
 """
 Parameter values for the ORN to LN synapse
 """
 orns_lns_ini = {
-    "g": 0.01/p_orn_ln     # weight in (muS?)
+    "g": 0.3/n_orn_ln     # weight in (muS?)
     }
 
 
@@ -160,7 +158,7 @@ lns_pns_conn_init = create_custom_init_var_snippet_class(
 """
 Parameter values for the LN to PN synapse
 """
-lns_pns_g= 0.0008
+lns_pns_g= 0.0006
 
 """
 Parameter values for the LN to PN post-synapse

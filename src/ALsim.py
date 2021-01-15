@@ -12,6 +12,20 @@ from helper import *
 
 # from exp1 import *
 
+n_glo= 160
+n= {
+    "ORNs": 60,
+    "PNs": 5,
+    "LNs": 25
+    }
+
+N= {
+    "ORNs": n_glo*n["ORNs"],
+    "PNs": n_glo*n["PNs"],
+    "LNs": n_glo*n["LNs"]
+}
+
+
 def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label):
     path = os.path.isdir(dirname)
     if not path:
@@ -48,7 +62,7 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
                                                 orns, pns,
                                                 "StaticPulse", {}, orns_pns_ini, {}, {},
                                                 "ExpCond", orns_pns_post_params, {},
-                                                init_connectivity(orns_al_connect, {"n_orn": n["ORNs"], "n_trg": n["PNs"], "p_c": p_orn_pn})
+                                                init_connectivity(orns_al_connect, {"n_orn": n["ORNs"], "n_trg": n["PNs"], "n_pre": n_orn_pn})
                                                 )
 
     # Connect ORNs to LNs
@@ -57,7 +71,7 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
                                                 orns, lns,
                                                 "StaticPulse", {}, orns_lns_ini, {}, {},
                                                 "ExpCond", orns_lns_post_params, {},
-                                                init_connectivity(orns_al_connect, {"n_orn": n["ORNs"], "n_trg": n["LNs"], "p_c": p_orn_ln})
+                                                init_connectivity(orns_al_connect, {"n_orn": n["ORNs"], "n_trg": n["LNs"], "n_pre": n_orn_ln})
                                                 )
     # Connect PNs to LNs
     if n["LNs"] > 0 and n["PNs"] > 0:
