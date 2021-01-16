@@ -21,8 +21,11 @@ def set_odor_simple(ors, slot, odor, c, n):
     # Set the k's according to the "simple model" (not Ho Ka extension)
     # In this case the k's are independent of other present odors
     # ors - "neuron" population of ORs
-    # slot - string: the odor slot to use "0", "1" or "2" 
-    kp1cn= np.power(odor*c*100,n)
+    # slot - string: the odor slot to use "0", "1" or "2"
+    # odor - array containing the relative activation of OR types (size num glo), normalized to sum 1
+    # c - concentration in "dilution terms", so values 1e-7 ... 1e-1
+    # n - Hill coefficient
+    kp1cn= np.power(odor*c*2500,n)
     km1= 0.05
     kp2= 0.5
     km2= 0.05
@@ -45,5 +48,6 @@ def gauss_odor(n_glo, m, sig):
     d= np.minimum(np.abs(d),np.abs(d+n_glo))
     d= np.minimum(np.abs(d),np.abs(d-n_glo))
     od= np.exp(-np.power(d,2)/(2*np.power(sig,2)))
+    od= od/(np.sqrt(2*np.pi)*sig)
     return od
     

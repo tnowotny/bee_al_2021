@@ -6,6 +6,7 @@ from exp1_plots import exp1_plots
 from ALsim import *
 import sim
 
+
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
 dirname= timestr+"-runs"
