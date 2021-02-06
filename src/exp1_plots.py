@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from helper import *
 
-def exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, dt, n_glo, n, N, dirname, label):
+def exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, dt, n_glo, n, N, dirname, label,display= True):
     dirname= dirname+"/"
     dt_sdf= 1.0
     sigma_sdf= 300.0
@@ -65,4 +65,5 @@ def exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, dt
         plt.savefig(dirname+label+"_"+pop+"_sdftraces.png",dpi=300)
 
     # Show plot
-    plt.show()
+    if display:
+        plt.show()
