@@ -50,7 +50,7 @@ n_orn_pn= 12
 Initial values for the ORN to PN synapse
 """
 orns_pns_ini = {
-    "g": 0.3/n_orn_pn     # weight in (muS?)     
+    "g": 0.15/n_orn_pn     # weight in (muS?)     
     }
 
 
@@ -91,7 +91,7 @@ n_orn_ln= 12
 Parameter values for the ORN to LN synapse
 """
 orns_lns_ini = {
-    "g": 0.3/n_orn_ln     # weight in (muS?)
+    "g": 0.2/n_orn_ln     # weight in (muS?)
     }
 
 
@@ -158,7 +158,7 @@ lns_pns_conn_init = create_custom_init_var_snippet_class(
 """
 Parameter values for the LN to PN synapse
 """
-lns_pns_g= 0.0006
+lns_pns_g= 0.0003
 
 """
 Parameter values for the LN to PN post-synapse
@@ -185,7 +185,7 @@ lns_lns_conn_init = create_custom_init_var_snippet_class(
 """
 Parameter values for the LN to LN synapse
 """
-lns_lns_g= 0.0002
+lns_lns_g= 0.0001
 
 
 """

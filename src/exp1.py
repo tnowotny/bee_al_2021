@@ -39,7 +39,7 @@ plot_sdf= {
     }
 
 label= "1e-6_n07"
-hill_exp= 1
+hill_exp= 2
 
 od= gauss_odor(n_glo, 80, 10)
 odors= od
