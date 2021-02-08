@@ -25,10 +25,11 @@ def set_odor_simple(ors, slot, odor, c, n):
     # odor - array containing the relative activation of OR types (size num glo), normalized to sum 1
     # c - concentration in "dilution terms", so values 1e-7 ... 1e-1
     # n - Hill coefficient
-    kp1cn= np.power(odor*c*2500,n)
-    km1= 0.05
-    kp2= 0.5
-    km2= 0.05
+    kp1cn= np.power(odor*c*500,n)
+    print(kp1cn)
+    km1= 0.025
+    kp2= 0.025
+    km2= 0.025
 
     vname= "kp1cn_"+slot
     ors.vars[vname].view[:]= kp1cn
@@ -38,8 +39,6 @@ def set_odor_simple(ors, slot, odor, c, n):
     ors.vars[vname].view[:]= kp2
     vname= "km2_"+slot
     ors.vars[vname].view[:]= km2
-    # ors.vars["rb_"+slot].view[:]= np.zeros(odor.shape)
-    # ors.vars["ra_"+slot].view[:]= np.zeros(odor.shape)
     
     
 def gauss_odor(n_glo, m, sig):
@@ -48,6 +47,9 @@ def gauss_odor(n_glo, m, sig):
     d= np.minimum(np.abs(d),np.abs(d+n_glo))
     d= np.minimum(np.abs(d),np.abs(d-n_glo))
     od= np.exp(-np.power(d,2)/(2*np.power(sig,2)))
-    od= od/(np.sqrt(2*np.pi)*sig)
+    # NOTE: We do not normalise by area. This is a) unrealistic (most activated
+    # glomerulus markedly less activated in a broadly tuned odour than in a
+    # narrowly tuned odour) and b) becomes impractical when trying to do "fair
+    # comparison" systematically for odours that are wide/narrow
     return od
     

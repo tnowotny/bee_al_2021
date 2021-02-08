@@ -47,16 +47,25 @@ or_model = create_custom_neuron_class(
     sim_code="""
     // update all bound receptors and activated receptors
     $(rb_0)+= ($(kp1cn_0)*$(r0) - $(km1_0)*$(rb_0) + $(km2_0)*$(ra_0) - $(kp2_0)*$(rb_0))*DT;
+    if ($(rb_0) > 1.0) $(rb_0)= 1.0;
     $(ra_0)+= ($(kp2_0)*$(rb_0) - $(km2_0)*$(ra_0))*DT;
+    if ($(ra_0) > 1.0) $(ra_0)= 1.0;
     $(rb_1)+= ($(kp1cn_1)*$(r0) - $(km1_1)*$(rb_1) + $(km2_1)*$(ra_1) - $(kp2_1)*$(rb_1))*DT;
+    if ($(rb_1) > 1.0) $(rb_1)= 1.0;
     $(ra_1)+= ($(kp2_1)*$(rb_1) - $(km2_1)*$(ra_1))*DT;
+    if ($(ra_1) > 1.0) $(ra_1)= 1.0;
     $(rb_2)+= ($(kp1cn_2)*$(r0) - $(km1_2)*$(rb_2) + $(km2_2)*$(ra_2) - $(kp2_2)*$(rb_2))*DT;
+    if ($(rb_2) > 1.0) $(rb_2)= 1.0;
     $(ra_2)+= ($(kp2_2)*$(rb_2) - $(km2_2)*$(ra_2))*DT;
+    if ($(ra_2) > 1.0) $(ra_2)= 1.0;
     // now update ra and calculate the sum of bound receptors
     scalar rb= $(rb_0) + $(rb_1) + $(rb_2);
+    if (rb > 1.0) rb= 1.0;
     $(ra)= $(ra_0) + $(ra_1) + $(ra_2);
+    if ($(ra) > 1.0) $(ra)= 1.0;
     // then update r0 as a function of rb and ra
     $(r0)= 1.0 - rb - $(ra);
+    if ($(r0) < 0.0) $(r0)= 0.0;
     """,
     reset_code="",
     threshold_condition_code=""

@@ -11,10 +11,10 @@ import sim
 timestr = time.strftime("%Y-%m-%d")
 dirname= timestr+"-runs"
 
-t_total= 20000.0
+t_total= 30000.0
 
 rec_state= [
-#    ("ORs", "ra"),
+    ("ORs", "ra"),
 #    ("ORNs", "V"),
 #    ("ORNs", "a"),
 #    ("PNs", "V")
@@ -39,7 +39,7 @@ plot_sdf= {
     }
 
 label= "1e-6_n07"
-hill_exp= 0.7
+hill_exp= 1
 
 od= gauss_odor(n_glo, 80, 10)
 odors= od
@@ -94,8 +94,32 @@ protocol= [
         "odor": 0,
         "ochn": "0",
         "concentration": 0.0
+        },
+    {
+        "t": 21000.0,
+        "odor": 0,
+        "ochn": "0",
+        "concentration": 1e-2
+        },
+    {
+        "t": 24000.0,
+        "odor": 0,
+        "ochn": "0",
+        "concentration": 0.0
+        },
+    {
+        "t": 26000.0,
+        "odor": 0,
+        "ochn": "0",
+        "concentration": 1e-1
+        },
+    {
+        "t": 29000.0,
+        "odor": 0,
+        "ochn": "0",
+        "concentration": 0.0
         }
-    ]
+     ]
 
 if __name__ == "__main__":
     state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, sim.dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label)
