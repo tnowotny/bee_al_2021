@@ -48,7 +48,7 @@ label= "test_sig"
 
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
 # work on receptors tiling the space of possible sigmoid responses
-hill_exp= np.random.uniform(0.6, 1.0, n_glo)
+hill_exp= np.random.uniform(0.5, 1.5, n_glo)
 print(hill_exp)
 
 # Let's do a progression of broadening odours
@@ -57,7 +57,7 @@ odor_sigma= 0.2
 oNo= 30  # how many odors to try
 for i in range(oNo):
     od= gauss_odor(n_glo, 80, odor_sigma)
-    odor_sigma*= 1.1
+    odor_sigma*= 1.2
     if odors is None:
         odors= od
     else:
@@ -68,7 +68,7 @@ for i in range(oNo):
 protocol= []
 t_off= 3000.0
 for i in range(oNo):
-    for c in range(4):
+    for c in range(5):
         sub_prot= {
             "t": t_off,
             "odor": i,

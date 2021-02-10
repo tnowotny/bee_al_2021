@@ -39,7 +39,8 @@ plot_sdf= {
     }
 
 label= "1e-6_n07"
-hill_exp= 2
+# let's assume that sensible values are 0.5 to 1.5
+hill_exp= 1.5
 
 od= gauss_odor(n_glo, 80, 10)
 odors= od

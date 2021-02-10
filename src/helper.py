@@ -12,8 +12,9 @@ def make_sdf(sT, sID, allID, t0, tmax, dt, sigma):
         for t, sid in zip(sT, sID): 
             left= int((t-t0-kwdt)/dt)
             right= int((t-t0+kwdt)/dt)
-            sdfs[sid,left:right]+=x
-
+            if right <= n:
+                sdfs[sid,left:right]+=x
+           
     return sdfs
                   
 
