@@ -91,7 +91,7 @@ n_orn_ln= 12
 Parameter values for the ORN to LN synapse
 """
 orns_lns_ini = {
-    "g": 0.2/n_orn_ln     # weight in (muS?)
+    "g": 0.15/n_orn_ln     # weight in (muS?)
     }
 
 

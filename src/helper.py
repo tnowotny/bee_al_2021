@@ -26,7 +26,7 @@ def set_odor_simple(ors, slot, odor, c, n):
     # odor - array containing the relative activation of OR types (size num glo), normalized to sum 1
     # c - concentration in "dilution terms", so values 1e-7 ... 1e-1
     # n - Hill coefficient
-    kp1cn= np.power(odor*c*500,n)
+    kp1cn= np.power(odor*c*2000,n)
     print(kp1cn)
     km1= 0.025
     kp2= 0.025

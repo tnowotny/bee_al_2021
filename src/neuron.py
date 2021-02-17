@@ -25,7 +25,7 @@ orn_params = {"C_mem": 1.0,
               "V_leak": -60.0,
               "g_leak": 0.01,
               "r_scale": 5.0,
-              "g_adapt": 0.01,
+              "g_adapt": 0.005,
               "V_adapt": -70.0,
               "tau_adapt": 1000.0,
               "noise_A": 2.1/np.sqrt(sim.dt)
