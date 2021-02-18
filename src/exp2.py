@@ -11,7 +11,7 @@ import sys
 experiment to investigate the effect of decreasing response with higher concentration for a single odor but for different breadth of odour activation from very narrow to very broad
 """
 
-if sys.argc < 2:
+if len(sys.argv) < 2:
     print("usage: python exp2.py <run#>")
     exit()
 
