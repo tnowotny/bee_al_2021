@@ -6,6 +6,8 @@ from exp1_plots import exp1_plots
 from ALsim import *
 import sim
 
+plotting= True
+use_spk_rec= True
 
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
@@ -123,6 +125,7 @@ protocol= [
      ]
 
 if __name__ == "__main__":
-    state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, sim.dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label)
+    state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, sim.dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label, use_spk_rec)
 
-    exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, sim.dt, n_glo, n, N, dirname, label)
+    if plotting:
+        exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, sim.dt, n_glo, n, N, dirname, label)
