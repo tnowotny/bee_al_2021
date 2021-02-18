@@ -11,29 +11,32 @@ def plot_avg_sdf(spike_t, spike_ID,t_total,N,label,pop,dt_sdf= 5.0, sigma_sdf= 2
     plt.colorbar()
     plt.savefig(label+"_"+pop+"_sdfmap.png",dpi=300)
 
+    avgsdf= []
     if percentile < 100:
-        t_avg= np.mean(sdfs,1)
-        p= np.percentile(t_avg,percentile)
-        print(p)
-        print(t_avg)
-        ind= np.argwhere(t_avg > p).flatten()
-        plt.figure()
-        print(ind)
-        plt.plot(ind, t_avg[ind],'o')
-        plt.gca().set_xlim(0,N)
-        avgsdf= np.mean(sdfs[ind,:],0)
-        print(sdfs.shape)
-        print(avgsdf.shape)
+        wds= int(t_total//30000)
+        # extract percentile of highest responders per odour width episode
+        for i in range(wds):
+            left= (i*30000)//dt_sdf
+            right= left+30000//dt_sdf
+            lsdfs= sdfs[:, left:right]
+            t_avg= np.mean(lsdfs,1)
+            p= np.percentile(t_avg,percentile)
+            print(p)
+            ind= np.argwhere(t_avg > p).flatten()
+            mn= np.mean(lsdfs[ind,:],0)
+            avgsdf.append(mn)
+        tavgsdf= np.hstack(avgsdf)
     else:
-        avgsdf= np.mean(sdfs,0)
+        tavgsdf= np.mean(sdfs,0)
     plt.figure()
-    plt.plot(avgsdf)
-    print(avgsdf.shape)
+    plt.plot(tavgsdf)
+    print(tavgsdf.shape)
     plt.gca().set_title("average SDF of "+pop)
     plt.savefig(label+"_"+pop+"_avgsdf.png",dpi=300)
     if display:
         plt.show()
-    
+    return sdfs
+
 if __name__ == "__main__":
 
     argv= sys.argv
@@ -48,4 +51,4 @@ if __name__ == "__main__":
     perc= float(argv[5])
     spike_t= np.load(label+"_"+pop+"_spike_t.npy")
     spike_ID= np.load(label+"_"+pop+"_spike_ID.npy")
-    plot_avg_sdf(spike_t, spike_ID, t_total, N, label, pop, dt_sdf= 2, sigma_sdf= 50.0, percentile= perc)
+    plot_avg_sdf(spike_t, spike_ID, t_total, N, label, pop, dt_sdf= 1, sigma_sdf= 50.0, percentile= perc)
