@@ -5,10 +5,20 @@ from helper import *
 from exp1_plots import exp1_plots
 from ALsim import *
 import sim
+import sys
 
 """
 experiment to investigate the effect of decreasing response with higher concentration for a single odor but for different breadth of odour activation from very narrow to very broad
 """
+
+if sys.argc < 2:
+    print("usage: python exp2.py <run#>")
+    exit()
+
+ino= int(sys.argv[1])
+print("lns_pns_g: %f" % lns_pns_g)
+lns_pns_g*= 0.1*np.power(1.2,ino)
+print("lns_pns_g: %f" % lns_pns_g)
 
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
@@ -48,7 +58,14 @@ label= "test_sig"
 
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
 # work on receptors tiling the space of possible sigmoid responses
-hill_exp= np.random.uniform(0.5, 1.5, n_glo)
+
+hill_new= True
+
+if hill_new:
+    hill_exp= np.random.uniform(0.5, 1.5, n_glo)
+    np.save(dirname+"/"+label+"_"+ino+"_hill",hill_exp)
+else:
+    hill_exp= np.load(dirname+"/"+label+"_"+ino+"_hill.npy")
 print(hill_exp)
 
 # Let's do a progression of broadening odours
@@ -67,13 +84,14 @@ for i in range(oNo):
 # 3 second breaks
 protocol= []
 t_off= 3000.0
+base= np.power(10,0.2)
 for i in range(oNo):
-    for c in range(5):
+    for c in range(25):
         sub_prot= {
             "t": t_off,
             "odor": i,
             "ochn": "0",
-            "concentration": 1e-6*np.power(10,c),
+            "concentration": 1e-6*np.power(base,c),
         }
         protocol.append(sub_prot)
         sub_prot= {
@@ -90,7 +108,7 @@ print(protocol)
 t_total= t_off
 
 if __name__ == "__main__":
-    state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, sim.dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label)
+    state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, sim.dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label+"_"+ino)
 
     if plotting:
-        exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, sim.dt, n_glo, n, N, dirname, label, display=plotdisplay)
+        exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, sim.dt, n_glo, n, N, dirname, label+"_"+ino, display=plotdisplay)

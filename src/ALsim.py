@@ -147,16 +147,16 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
     if state_bufs:
         # only save the time array if anything is being saved
         t_array= np.arange(0.0,t_total,model.dT)
-        np.save(dirname+"_"+label+"_t", t_array)
+        np.save(dirname+"/"+label+"_t", t_array)
         for p in state_bufs:
             state_bufs[p]= np.vstack(state_bufs[p])
-            np.save(dirname+"_"+label+"_"+p, state_bufs[p])
+            np.save(dirname+"/"+label+"_"+p, state_bufs[p])
         
     for pop in rec_spikes:
         spike_t[pop]= np.hstack(spike_t[pop])
-        np.save(dirname+label+"_"+pop+"_spike_t", spike_t[pop])
+        np.save(dirname+"/"+label+"_"+pop+"_spike_t", spike_t[pop])
         spike_ID[pop]= np.hstack(spike_ID[pop])
-        np.save(dirname+label+"_"+pop+"_spike_ID", spike_ID[pop])
+        np.save(dirname+"/"+label+"_"+pop+"_spike_ID", spike_ID[pop])
 
     return state_bufs, spike_t, spike_ID
 #with open('exp1_plots.py') as f: exec(f.read())
