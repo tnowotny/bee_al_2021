@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import json
 
 from pygenn import genn_wrapper
 from pygenn.genn_model import GeNNModel, init_connectivity, init_var
@@ -35,6 +36,54 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
         os.makedirs(dirname)
     dirname=dirname+"/"
 
+    with open(dirname+label+".para","w") as f:
+        f.write("use_spk_rec= {}".format(use_spk_rec))
+        f.write("spk_rec_steps= %d \n" % spk_rec_steps)
+        f.write("n_glo= %d \n" % n_glo)
+        f.write(json.dumps(n))
+        f.write("\n")
+        f.write(json.dumps(N))
+        f.write("\n")
+        f.write("t_total= %f \n" % t_total)
+        f.write("dt= %f \n" % dt)
+        f.write(json.dumps(rec_state))
+        f.write("\n")
+        f.write(json.dumps(rec_spikes))
+        f.write("\n")
+        f.write(json.dumps(protocol))
+        f.write("\n")
+        f.write(json.dumps(orn_params))
+        f.write("\n")
+        f.write(json.dumps(orn_ini))
+        f.write("\n")
+        f.write(json.dumps(pn_params))
+        f.write("\n")
+        f.write(json.dumps(pn_ini))
+        f.write("\n")
+        f.write(json.dumps(ln_params))
+        f.write("\n")
+        f.write(json.dumps(ln_ini))
+        f.write("n_orn_pn= %d \n" % n_orn_pn)
+        f.write(json.dumps(orns_pns_ini))
+        f.write("\n")
+        f.write(json.dumps(orns_pns_post_params))
+        f.write("\n")
+        f.write("n_orn_ln= %d \n" % n_orn_ln)        
+        f.write(json.dumps(orns_lns_ini))
+        f.write("\n")
+        f.write(json.dumps(orns_lns_post_params))
+        f.write("\n")
+        f.write(json.dumps(pns_lns_ini))
+        f.write("\n")
+        f.write(json.dumps(pns_lns_post_params))
+        f.write("\n")
+        f.write("lns_pns_g= %d \n" % lns_pns_g)
+        f.write(json.dumps(lns_pns_post_params))
+        f.write("\n")
+        f.write("lns_lns_g= %d \n" % lns_lns_g)
+        f.write(json.dumps(lns_lns_post_params))
+        f.write("\n")
+        
     # Create a single-precision GeNN model
     model = GeNNModel("double", "honeyAL"#, backend="SingleThreadedCPU"
     )

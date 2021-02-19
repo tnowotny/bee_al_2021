@@ -16,9 +16,8 @@ if len(sys.argv) < 2:
     exit()
 
 ino= int(sys.argv[1])
-print("lns_pns_g: %f" % lns_pns_g)
-lns_pns_g*= 0.1*np.power(1.2,ino)
-print("lns_pns_g: %f" % lns_pns_g)
+lns_pns_g*= 0.1*np.power(np.sqrt(10),ino)
+lns_lns_g*= 0.1*np.power(np.sqrt(10),ino)
 
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
@@ -31,8 +30,6 @@ if not path:
 
 plotting= False
 plotdisplay= False
-
-
 
 rec_state= [
 #    ("ORs", "ra"),
@@ -74,17 +71,24 @@ else:
 print(hill_exp)
 
 # Let's do a progression of broadening odours
-odors= None
-odor_sigma= 0.2
-oNo= 30  # how many odors to try
-for i in range(oNo):
-    od= gauss_odor(n_glo, 80, odor_sigma)
-    odor_sigma*= 1.2
-    if odors is None:
-        odors= od
-    else:
-        odors= np.vstack((odors, od))
+odor_new= True
 
+if odor_new:
+    odors= None
+    odor_sigma= 0.2
+    oNo= 30  # how many odors to try
+    for i in range(oNo):
+        od= gauss_odor(n_glo, 80, odor_sigma)
+        odor_sigma*= 1.2
+        if odors is None:
+            odors= od
+        else:
+            odors= np.vstack((odors, od))
+    np.save(dirname+"/"+label+"_odors",odors)
+else:
+    odors= np.load(dirname+"/"+label+"_odors.npy")
+    
+            
 # Now, let's make a protocol where they are presented for 3 secs with
 # 3 second breaks
 protocol= []
@@ -108,12 +112,10 @@ for i in range(oNo):
         protocol.append(sub_prot)
         t_off+= 6000.0;
 
-print(protocol)
-
 t_total= t_off
 
 if __name__ == "__main__":
-    state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, sim.dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label+"_"+str(ino))
+    state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, sim.dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label+"_"+str(ino), use_spk_rec= True)
 
     if plotting:
         exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, sim.dt, n_glo, n, N, dirname, label+"_"+str(ino), display=plotdisplay)
