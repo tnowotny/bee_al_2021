@@ -12,6 +12,8 @@ from helper import *
 
 # from exp1 import *
 
+spk_rec_steps= 10000
+
 n_glo= 160
 n= {
     "ORNs": 60,
@@ -26,7 +28,7 @@ N= {
 }
 
 
-def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label):
+def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label, use_spk_rec= False):
     path = os.path.isdir(dirname)
     if not path:
         print("making dir "+dirname)
@@ -43,10 +45,21 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
     # Add neuron populations to model
     ors = model.add_neuron_population("ORs", n_glo, or_model, or_params, or_ini)
     orns = model.add_neuron_population("ORNs", n_glo*n["ORNs"], adaptive_LIF, orn_params, orn_ini)
+    if use_spk_rec:
+        if "ORNs" in rec_spikes:
+            orns.spike_recording_enabled= True
+
     if n["PNs"] > 0:
         pns= model.add_neuron_population("PNs", n_glo*n["PNs"], adaptive_LIF, pn_params, pn_ini)
+        if use_spk_rec:
+            if "PNs" in rec_spikes:
+                pns.spike_recording_enabled= True
+            
     if n["LNs"] > 0:
         lns= model.add_neuron_population("LNs", n_glo*n["LNs"], adaptive_LIF, ln_params, ln_ini)
+        if use_spk_rec:
+            if "LNs" in rec_spikes:
+                lns.spike_recording_enabled= True
 
     # Connect ORs to ORNs
     ors_orns = model.add_synapse_population("ORs_ORNs", "SPARSE_GLOBALG", genn_wrapper.NO_DELAY,
@@ -98,7 +111,7 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
     print("building model ...");
     # Build and load model
     model.build()
-    model.load()
+    model.load(num_recording_timesteps= spk_rec_steps)
     
     # Prepare variables for recording results
     state_views= dict()
@@ -117,6 +130,7 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
     
     # Simulate
     prot_pos= 0
+    int_t= 0
     while model.t < t_total:
         if prot_pos < len(protocol) and model.t >= protocol[prot_pos]["t"]:
             tp= protocol[prot_pos]
@@ -126,7 +140,8 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
         model.step_time()
         if int(model.t/model.dT)%1000 == 0:
             print(model.t)
-    
+
+        int_t+= 1
         # for pop in state_pops:
         #     model.pull_state_from_device(pop)
         for pop, var in rec_state:
@@ -135,13 +150,21 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
         for p in state_bufs:
             state_bufs[p].append(np.copy(state_views[p])) 
 
-        for pop in rec_spikes:
-            the_pop= model.neuron_populations[pop]
-            the_pop.pull_current_spikes_from_device()
-            if (the_pop.spike_count[0] > 0):
-                ln= the_pop.spike_count[0]
-                spike_t[pop].append(np.copy(model.t*np.ones(ln))) 
-                spike_ID[pop].append(np.copy(the_pop.spikes[0:ln]))
+        if use_spk_rec:
+            if int_t%spk_rec_steps == 0:
+                model.pull_recording_buffers_from_device()
+                for pop in rec_spikes:
+                    the_pop= model.neuron_populations[pop]
+                    spike_t[pop].append(the_pop.spike_recording_data[0])
+                    spike_ID[pop].append(the_pop.spike_recording_data[1])
+        else:
+            for pop in rec_spikes:
+                the_pop= model.neuron_populations[pop]
+                the_pop.pull_current_spikes_from_device()
+                if (the_pop.spike_count[0] > 0):
+                    ln= the_pop.spike_count[0]
+                    spike_t[pop].append(np.copy(model.t*np.ones(ln))) 
+                    spike_ID[pop].append(np.copy(the_pop.spikes[0:ln]))
 
     # Saving results
     if state_bufs:
@@ -151,7 +174,7 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
         for p in state_bufs:
             state_bufs[p]= np.vstack(state_bufs[p])
             np.save(dirname+label+"_"+p, state_bufs[p])
-        
+
     for pop in rec_spikes:
         spike_t[pop]= np.hstack(spike_t[pop])
         np.save(dirname+label+"_"+pop+"_spike_t", spike_t[pop])
@@ -159,4 +182,4 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
         np.save(dirname+label+"_"+pop+"_spike_ID", spike_ID[pop])
 
     return state_bufs, spike_t, spike_ID
-#with open('exp1_plots.py') as f: exec(f.read())
+
