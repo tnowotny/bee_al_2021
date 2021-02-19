@@ -6,7 +6,7 @@ from exp1_plots import exp1_plots
 from ALsim import *
 import sim
 import sys
-
+import os
 """
 experiment to investigate the effect of decreasing response with higher concentration for a single odor but for different breadth of odour activation from very narrow to very broad
 """
@@ -23,6 +23,11 @@ print("lns_pns_g: %f" % lns_pns_g)
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
 dirname= timestr+"-runs"
+
+path = os.path.isdir(dirname)
+if not path:
+    print("making dir "+dirname)
+    os.makedirs(dirname)
 
 plotting= False
 plotdisplay= False
@@ -63,9 +68,9 @@ hill_new= True
 
 if hill_new:
     hill_exp= np.random.uniform(0.5, 1.5, n_glo)
-    np.save(dirname+"/"+label+"_"+ino+"_hill",hill_exp)
+    np.save(dirname+"/"+label+"_hill",hill_exp)
 else:
-    hill_exp= np.load(dirname+"/"+label+"_"+ino+"_hill.npy")
+    hill_exp= np.load(dirname+"/"+label+"_hill.npy")
 print(hill_exp)
 
 # Let's do a progression of broadening odours
@@ -108,7 +113,7 @@ print(protocol)
 t_total= t_off
 
 if __name__ == "__main__":
-    state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, sim.dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label+"_"+ino)
+    state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, sim.dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label+"_"+str(ino))
 
     if plotting:
-        exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, sim.dt, n_glo, n, N, dirname, label+"_"+ino, display=plotdisplay)
+        exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, sim.dt, n_glo, n, N, dirname, label+"_"+str(ino), display=plotdisplay)
