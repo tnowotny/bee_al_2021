@@ -37,7 +37,7 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
     dirname=dirname+"/"
 
     with open(dirname+label+".para","w") as f:
-        f.write("use_spk_rec= {}".format(use_spk_rec))
+        f.write("use_spk_rec= {}\n".format(use_spk_rec))
         f.write("spk_rec_steps= %d \n" % spk_rec_steps)
         f.write("n_glo= %d \n" % n_glo)
         f.write(json.dumps(n))
@@ -77,10 +77,10 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
         f.write("\n")
         f.write(json.dumps(pns_lns_post_params))
         f.write("\n")
-        f.write("lns_pns_g= %d \n" % lns_pns_g)
+        f.write("lns_pns_g= %f \n" % lns_pns_g)
         f.write(json.dumps(lns_pns_post_params))
         f.write("\n")
-        f.write("lns_lns_g= %d \n" % lns_lns_g)
+        f.write("lns_lns_g= %f \n" % lns_lns_g)
         f.write(json.dumps(lns_lns_post_params))
         f.write("\n")
         
@@ -206,6 +206,7 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
                     the_pop= model.neuron_populations[pop]
                     spike_t[pop].append(the_pop.spike_recording_data[0])
                     spike_ID[pop].append(the_pop.spike_recording_data[1])
+                print("fetched spikes from buffer ... complete")
         else:
             for pop in rec_spikes:
                 the_pop= model.neuron_populations[pop]
