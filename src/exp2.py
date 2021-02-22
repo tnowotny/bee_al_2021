@@ -16,8 +16,12 @@ if len(sys.argv) < 2:
     exit()
 
 ino= int(sys.argv[1])
-lns_pns_g*= 0.1*np.power(np.sqrt(10),ino)
-lns_lns_g*= 0.1*np.power(np.sqrt(10),ino)
+if ino == -1:
+    lns_pns_g= 0
+    lns_lns_g= 0
+else:
+    lns_pns_g*= 0.1*np.power(np.sqrt(10),ino)
+    lns_lns_g*= 0.1*np.power(np.sqrt(10),ino)
 
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
