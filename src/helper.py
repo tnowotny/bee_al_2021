@@ -1,7 +1,9 @@
 import numpy as np
 
 def make_sdf(sT, sID, allID, t0, tmax, dt, sigma):
-    n= int((tmax-t0)/dt)
+    tleft= t0-3*sigma
+    tright= tmax+3*sigma
+    n= int((tright-tleft)/dt)
     sdfs= np.zeros((len(allID),n))
     kwdt= 3*sigma
     i= 0
@@ -9,11 +11,12 @@ def make_sdf(sT, sID, allID, t0, tmax, dt, sigma):
     x= np.exp(-np.power(x,2)/(2*sigma*sigma))
     x= x/(sigma*np.sqrt(2.0*np.pi))*1000.0
     if sT is not None:
-        for t, sid in zip(sT, sID): 
-            left= int((t-t0-kwdt)/dt)
-            right= int((t-t0+kwdt)/dt)
-            if right <= n:
-                sdfs[sid,left:right]+=x
+        for t, sid in zip(sT, sID):
+            if (t > t0 and t < tmax): 
+                left= int((t-tleft-kwdt)/dt)
+                right= int((t-tleft+kwdt)/dt)
+                if right <= n:
+                    sdfs[sid,left:right]+=x
            
     return sdfs
                   
