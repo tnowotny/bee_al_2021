@@ -3,53 +3,57 @@ import matplotlib.pyplot as plt
 import time
 from helper import *
 from exp1_plots import exp1_plots
-from ALsim import *
-import sim
+from ALsim import ALsim
 
-plotting= True
-use_spk_rec= True
+
+from ALsimParameters import std_paras
+
+paras= std_paras()
+paras["plotting"]= True
+paras["use_spk_rec"]= True
 
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
-dirname= timestr+"-runs"
+paras["dirname"]= timestr+"-runs"
 
-t_total= 30000.0
+paras["t_total"]= 30000.0
 
-rec_state= [
+paras["rec_state"]= [
     ("ORs", "ra"),
 #    ("ORNs", "V"),
 #    ("ORNs", "a"),
 #    ("PNs", "V")
 ]
 
-rec_spikes= [
+paras["rec_spikes"]= [
     "ORNs",
     "PNs",
     "LNs"
     ]
 
-plot_raster= [
+paras["plot_raster"]= [
     "ORNs",
     "PNs",
     "LNs"
     ]
 
-plot_sdf= {
-    "ORNs": range(74,86,2),
-    "PNs": range(74,87,2),
-    "LNs": range(74,87,2)
+paras["plot_sdf"]= {
+    "ORNs": list(range(74,86,2)),
+    "PNs": list(range(74,87,2)),
+    "LNs": list(range(74,87,2))
     }
 
-label= "1e-6_n07"
+paras["label"]= "simple_test"
 # let's assume that sensible values are 0.5 to 1.5
-hill_exp= 1.5
 
-od= gauss_odor(n_glo, 80, 10)
+hill_exp= np.load("2021-02-22-runs-jamest/test_sig_hill.npy")
+
+od= gauss_odor(paras["n_glo"], 80, 30)
 odors= od
-od= gauss_odor(n_glo, 90, 10)
+od= gauss_odor(paras["n_glo"], 80, 40)
 odors= np.vstack((odors, od))
    
-protocol= [
+paras["protocol"]= [
     {
         "t": 1000.0,
         "odor": 0,
@@ -124,8 +128,11 @@ protocol= [
         }
      ]
 
-if __name__ == "__main__":
-    state_bufs, spike_t, spike_ID= ALsim(n_glo, n, N, t_total, sim.dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label, use_spk_rec)
+paras["lns_pns_g"]= 0.0   
+paras["lns_lns_g"]= 0.0
 
-    if plotting:
-        exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, sim.dt, n_glo, n, N, dirname, label)
+if __name__ == "__main__":
+    state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras)
+
+    if paras["plotting"]:
+        exp1_plots(state_bufs, spike_t, spike_ID, paras)

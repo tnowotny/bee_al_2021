@@ -39,16 +39,16 @@ def exp1_plots(state_bufs, spike_t, spike_ID, plot_raster, plot_sdf, t_total, dt
             plt.title("PN")
 
     
-    for pop in plot_sdf:
-        sdfs= make_sdf(spike_t[pop], spike_ID[pop], np.arange(0,N[pop]), 0, t_total, dt_sdf, sigma_sdf)
+    for pop in paras["plot_sdf"]:
+        sdfs= make_sdf(spike_t[pop], spike_ID[pop], np.arange(0,paras["N"][pop]), 0, paras["t_total"], dt_sdf, sigma_sdf)
         plt.figure()
         plt.imshow(sdfs, extent=[-3*sigma_sdf,t_total+3*sigma_sdf,0,N[pop]], aspect='auto')
         plt.title(pop)
         plt.colorbar()
         plt.savefig(dirname+label+"_"+pop+"_sdfmap.png",dpi=300)
 
-        if n[pop] > 1:
-            sdfs= make_sdf(spike_t[pop], spike_ID[pop]//n[pop], np.arange(0,n_glo), 0, t_total, dt_sdf, sigma_sdf)
+        if paras["n"][pop] > 1:
+            sdfs= make_sdf(spike_t[pop], spike_ID[pop]//paras["n"][pop], np.arange(0,paras["n_glo"]), 0, paras["t_total"], dt_sdf, sigma_sdf)
             plt.figure()
             plt.imshow(sdfs/n[pop], extent=[-3*sigma_sdf,t_total+3*sigma_sdf,0,n_glo], aspect='auto')
             plt.title("average SDF of "+pop+" in each glomerulus")
