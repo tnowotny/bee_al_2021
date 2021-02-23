@@ -6,12 +6,10 @@ import json
 from pygenn import genn_wrapper
 from pygenn.genn_model import GeNNModel, init_connectivity, init_var
 
-from OR import (or_model, or_params, or_ini)
-from synapse import *
-from neuron import *
-from helper import *
-
-# from exp1 import *
+from OR import or_model
+from synapse import pass_or, pass_postsyn, ors_orns_connect, orns_al_connect, pns_lns_connect, lns_pns_conn_init, lns_lns_conn_init
+from neuron import adaptive_LIF
+from helper import set_odor_simple
 
 spk_rec_steps= 10000
 
@@ -29,85 +27,42 @@ N= {
 }
 
 
-def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, protocol, dirname, label, use_spk_rec= False):
-    path = os.path.isdir(dirname)
+def ALsim(odors, hill_exp, paras):
+    path = os.path.isdir(paras["dirname"])
     if not path:
-        print("making dir "+dirname)
-        os.makedirs(dirname)
-    dirname=dirname+"/"
+        print("making dir "+paras["dirname"])
+        os.makedirs(paras["dirname"])
+    dirname=paras["dirname"]+"/"
 
-    with open(dirname+label+".para","w") as f:
-        f.write("use_spk_rec= {}\n".format(use_spk_rec))
-        f.write("spk_rec_steps= %d \n" % spk_rec_steps)
-        f.write("n_glo= %d \n" % n_glo)
-        f.write(json.dumps(n))
+    with open(dirname+paras["label"]+".para","w") as f:
+        f.write(json.dumps(paras))
         f.write("\n")
-        f.write(json.dumps(N))
-        f.write("\n")
-        f.write("t_total= %f \n" % t_total)
-        f.write("dt= %f \n" % dt)
-        f.write(json.dumps(rec_state))
-        f.write("\n")
-        f.write(json.dumps(rec_spikes))
-        f.write("\n")
-        f.write(json.dumps(protocol))
-        f.write("\n")
-        f.write(json.dumps(orn_params))
-        f.write("\n")
-        f.write(json.dumps(orn_ini))
-        f.write("\n")
-        f.write(json.dumps(pn_params))
-        f.write("\n")
-        f.write(json.dumps(pn_ini))
-        f.write("\n")
-        f.write(json.dumps(ln_params))
-        f.write("\n")
-        f.write(json.dumps(ln_ini))
-        f.write("n_orn_pn= %d \n" % n_orn_pn)
-        f.write(json.dumps(orns_pns_ini))
-        f.write("\n")
-        f.write(json.dumps(orns_pns_post_params))
-        f.write("\n")
-        f.write("n_orn_ln= %d \n" % n_orn_ln)        
-        f.write(json.dumps(orns_lns_ini))
-        f.write("\n")
-        f.write(json.dumps(orns_lns_post_params))
-        f.write("\n")
-        f.write(json.dumps(pns_lns_ini))
-        f.write("\n")
-        f.write(json.dumps(pns_lns_post_params))
-        f.write("\n")
-        f.write("lns_pns_g= %f \n" % lns_pns_g)
-        f.write(json.dumps(lns_pns_post_params))
-        f.write("\n")
-        f.write("lns_lns_g= %f \n" % lns_lns_g)
-        f.write(json.dumps(lns_lns_post_params))
-        f.write("\n")
+        f.close()
         
     # Create a single-precision GeNN model
     model = GeNNModel("double", "honeyAL"#, backend="SingleThreadedCPU"
     )
 
     # Set simulation timestep to 0.1ms
-    model.dT = dt
+    model.dT = paras["dt"]
     
     # Add neuron populations to model
-    ors = model.add_neuron_population("ORs", n_glo, or_model, or_params, or_ini)
-    orns = model.add_neuron_population("ORNs", n_glo*n["ORNs"], adaptive_LIF, orn_params, orn_ini)
-    if use_spk_rec:
-        if "ORNs" in rec_spikes:
+    ors = model.add_neuron_population("ORs", paras["n_glo"], or_model, paras["or_params"], paras["or_ini"])
+    orns = model.add_neuron_population("ORNs", paras["n_glo"]*paras["n"]["ORNs"], adaptive_LIF, paras["orn_params"], paras["orn_ini"])
+    if paras["use_spk_rec"]:
+        if "ORNs" in paras["rec_spikes"]:
             orns.spike_recording_enabled= True
 
-    if n["PNs"] > 0:
-        pns= model.add_neuron_population("PNs", n_glo*n["PNs"], adaptive_LIF, pn_params, pn_ini)
-        if use_spk_rec:
-            if "PNs" in rec_spikes:
+    if paras["n"]["PNs"] > 0:
+        pns= model.add_neuron_population("PNs", paras["n_glo"]*paras["n"]["PNs"], adaptive_LIF, paras["pn_params"], paras["pn_ini"])
+        if paras["use_spk_rec"]:
+            if "PNs" in paras["rec_spikes"]:
                 pns.spike_recording_enabled= True
             
-    if n["LNs"] > 0:
-        lns= model.add_neuron_population("LNs", n_glo*n["LNs"], adaptive_LIF, ln_params, ln_ini)
-        if use_spk_rec:
-            if "LNs" in rec_spikes:
+    if paras["n"]["LNs"] > 0:
+        lns= model.add_neuron_population("LNs", paras["n_glo"]*paras["n"]["LNs"], adaptive_LIF, paras["ln_params"], paras["ln_ini"])
+        if paras["use_spk_rec"]:
+            if "LNs" in paras["rec_spikes"]:
                 lns.spike_recording_enabled= True
 
     # Connect ORs to ORNs
@@ -119,70 +74,70 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
                                             )
 
     # Connect ORNs to PNs
-    if n["PNs"] > 0:
+    if paras["n"]["PNs"] > 0:
         orns_pns = model.add_synapse_population("ORNs_PNs", "SPARSE_GLOBALG", genn_wrapper.NO_DELAY,
                                                 orns, pns,
-                                                "StaticPulse", {}, orns_pns_ini, {}, {},
-                                                "ExpCond", orns_pns_post_params, {},
-                                                init_connectivity(orns_al_connect, {"n_orn": n["ORNs"], "n_trg": n["PNs"], "n_pre": n_orn_pn})
+                                                "StaticPulse", {}, paras["orns_pns_ini"], {}, {},
+                                                "ExpCond", paras["orns_pns_post_params"], {},
+                                                init_connectivity(orns_al_connect, {"n_orn": paras["n"]["ORNs"], "n_trg": paras["n"]["PNs"], "n_pre": paras["n_orn_pn"]})
                                                 )
 
     # Connect ORNs to LNs
-    if n["LNs"] > 0:
+    if paras["n"]["LNs"] > 0:
         orns_lns = model.add_synapse_population("ORNs_LNs", "SPARSE_GLOBALG", genn_wrapper.NO_DELAY,
                                                 orns, lns,
-                                                "StaticPulse", {}, orns_lns_ini, {}, {},
-                                                "ExpCond", orns_lns_post_params, {},
-                                                init_connectivity(orns_al_connect, {"n_orn": n["ORNs"], "n_trg": n["LNs"], "n_pre": n_orn_ln})
+                                                "StaticPulse", {}, paras["orns_lns_ini"], {}, {},
+                                                "ExpCond", paras["orns_lns_post_params"], {},
+                                                init_connectivity(orns_al_connect, {"n_orn": paras["n"]["ORNs"], "n_trg": paras["n"]["LNs"], "n_pre": paras["n_orn_ln"]})
                                                 )
     # Connect PNs to LNs
-    if n["LNs"] > 0 and n["PNs"] > 0:
+    if paras["n"]["LNs"] > 0 and paras["n"]["PNs"] > 0:
         pns_lns =  model.add_synapse_population("PNs_LNs", "SPARSE_GLOBALG", genn_wrapper.NO_DELAY,
                                                 pns, lns,
-                                                "StaticPulse", {}, pns_lns_ini, {}, {},
-                                                "ExpCond", pns_lns_post_params, {},
-                                                init_connectivity(pns_lns_connect, {"n_pn": n["PNs"], "n_ln": n["LNs"]})
+                                                "StaticPulse", {}, paras["pns_lns_ini"], {}, {},
+                                                "ExpCond", paras["pns_lns_post_params"], {},
+                                                init_connectivity(pns_lns_connect, {"n_pn": paras["n"]["PNs"], "n_ln": paras["n"]["LNs"]})
                                                 )
     # Connect LNs to PNs
-    if n["LNs"] > 0 and n["PNs"] > 0:
+    if paras["n"]["LNs"] > 0 and paras["n"]["PNs"] > 0:
         lns_pns =  model.add_synapse_population("LNs_PNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
                                                 lns, pns,
-                                                "StaticPulse", {}, {"g": init_var(lns_pns_conn_init, {"n_pn": n["PNs"],"n_ln": n["LNs"],"g": lns_pns_g})}, {}, {},
-                                                "ExpCond", lns_pns_post_params, {}
+                                                "StaticPulse", {}, {"g": init_var(lns_pns_conn_init, {"n_pn": paras["n"]["PNs"],"n_ln": paras["n"]["LNs"],"g": paras["lns_pns_g"]})}, {}, {},
+                                                "ExpCond", paras["lns_pns_post_params"], {}
                                                 )
     # Connect LNs to LNs
-    if n["LNs"] > 0:
+    if paras["n"]["LNs"] > 0:
         lns_lns =  model.add_synapse_population("LNs_LNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
                                                 lns, lns,
-                                                "StaticPulse", {}, {"g": init_var(lns_lns_conn_init,{"n_ln": n["LNs"],"g": lns_lns_g})}, {}, {},
-                                                "ExpCond", lns_lns_post_params, {}
+                                                "StaticPulse", {}, {"g": init_var(lns_lns_conn_init,{"n_ln": paras["n"]["LNs"],"g": paras["lns_lns_g"]})}, {}, {},
+                                                "ExpCond", paras["lns_lns_post_params"], {}
                                                 )
     print("building model ...");
     # Build and load model
     model.build()
-    model.load(num_recording_timesteps= spk_rec_steps)
+    model.load(num_recording_timesteps= paras["spk_rec_steps"])
     
     # Prepare variables for recording results
     state_views= dict()
     state_bufs= dict()
-    state_pops= np.unique([k for k,i in rec_state])
-    for pop, var in rec_state:
+    state_pops= np.unique([k for k,i in paras["rec_state"]])
+    for pop, var in paras["rec_state"]:
         lbl= pop+"_"+var
         state_views[lbl]= model.neuron_populations[pop].vars[var].view
         state_bufs[lbl]= []
 
     spike_t= dict()
     spike_ID= dict()
-    for pop in rec_spikes:
+    for pop in paras["rec_spikes"]:
         spike_t[pop]= []
         spike_ID[pop]= []
     
     # Simulate
     prot_pos= 0
     int_t= 0
-    while model.t < t_total:
-        if prot_pos < len(protocol) and model.t >= protocol[prot_pos]["t"]:
-            tp= protocol[prot_pos]
+    while model.t < paras["t_total"]:
+        if prot_pos < len(paras["protocol"]) and model.t >= paras["protocol"][prot_pos]["t"]:
+            tp= paras["protocol"][prot_pos]
             set_odor_simple(ors, tp["ochn"], odors[tp["odor"],:], tp["concentration"], hill_exp)
             model.push_state_to_device("ORs")
             prot_pos+= 1
@@ -193,22 +148,22 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
         int_t+= 1
         # for pop in state_pops:
         #     model.pull_state_from_device(pop)
-        for pop, var in rec_state:
+        for pop, var in paras["rec_state"]:
             model.neuron_populations[pop].pull_var_from_device(var)
     
         for p in state_bufs:
             state_bufs[p].append(np.copy(state_views[p])) 
 
-        if use_spk_rec:
-            if int_t%spk_rec_steps == 0:
+        if paras["use_spk_rec"]:
+            if int_t%paras["spk_rec_steps"] == 0:
                 model.pull_recording_buffers_from_device()
-                for pop in rec_spikes:
+                for pop in paras["rec_spikes"]:
                     the_pop= model.neuron_populations[pop]
                     spike_t[pop].append(the_pop.spike_recording_data[0])
                     spike_ID[pop].append(the_pop.spike_recording_data[1])
                 print("fetched spikes from buffer ... complete")
         else:
-            for pop in rec_spikes:
+            for pop in paras["rec_spikes"]:
                 the_pop= model.neuron_populations[pop]
                 the_pop.pull_current_spikes_from_device()
                 if (the_pop.spike_count[0] > 0):
@@ -219,17 +174,17 @@ def ALsim(n_glo, n, N, t_total, dt, rec_state, rec_spikes, odors, hill_exp, prot
     # Saving results
     if state_bufs:
         # only save the time array if anything is being saved
-        t_array= np.arange(0.0,t_total,model.dT)
-        np.save(dirname+label+"_t", t_array)
+        t_array= np.arange(0.0,paras["t_total"],model.dT)
+        np.save(paras["dirname"]+paras["label"]+"_t", t_array)
         for p in state_bufs:
             state_bufs[p]= np.vstack(state_bufs[p])
-            np.save(dirname+label+"_"+p, state_bufs[p])
+            np.save(paras["dirname"]+paras["label"]+"_"+p, state_bufs[p])
 
-    for pop in rec_spikes:
+    for pop in paras["rec_spikes"]:
         spike_t[pop]= np.hstack(spike_t[pop])
-        np.save(dirname+label+"_"+pop+"_spike_t", spike_t[pop])
+        np.save(paras["dirname"]+paras["label"]+"_"+pop+"_spike_t", spike_t[pop])
         spike_ID[pop]= np.hstack(spike_ID[pop])
-        np.save(dirname+label+"_"+pop+"_spike_ID", spike_ID[pop])
+        np.save(paras["dirname"]+paras["label"]+"_"+pop+"_spike_ID", spike_ID[pop])
 
     return state_bufs, spike_t, spike_ID
 
