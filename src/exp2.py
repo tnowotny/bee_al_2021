@@ -127,5 +127,5 @@ paras["t_total"]= t_off
 if __name__ == "__main__":
     state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras)
 
-    if plotting:
+    if paras["plotting"]:
         exp1_plots(state_bufs, spike_t, spike_ID, paras, display=plotdisplay)
