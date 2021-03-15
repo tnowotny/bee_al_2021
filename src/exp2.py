@@ -33,7 +33,7 @@ paras["dirname"]= timestr+"-runs"
 
 path = os.path.isdir(paras["dirname"])
 if not path:
-    print("making dir "+oaras["dirname"])
+    print("making dir "+paras["dirname"])
     os.makedirs(paras["dirname"])
 
 paras["plotting"]= False
@@ -78,7 +78,6 @@ if hill_new:
     np.save(paras["dirname"]+"/"+label+"_hill",hill_exp)
 else:
     hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
-print(hill_exp)
 
 # Let's do a progression of broadening odours
 odor_new= False
@@ -96,6 +95,7 @@ if odor_new:
     np.save(paras["dirname"]+"/"+label+"_odors",odors)
 else:
     odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
+    oNo= odors.shape[0]
     
             
 # Now, let's make a protocol where they are presented for 3 secs with
