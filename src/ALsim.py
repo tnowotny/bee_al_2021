@@ -136,7 +136,7 @@ def ALsim(odors, hill_exp, paras):
     prot_pos= 0
     int_t= 0
     while model.t < paras["t_total"]:
-        if prot_pos < len(paras["protocol"]) and model.t >= paras["protocol"][prot_pos]["t"]:
+        while prot_pos < len(paras["protocol"]) and model.t >= paras["protocol"][prot_pos]["t"]:
             tp= paras["protocol"][prot_pos]
             set_odor_simple(ors, tp["ochn"], odors[tp["odor"],:], tp["concentration"], hill_exp)
             model.push_state_to_device("ORs")
