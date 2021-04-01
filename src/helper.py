@@ -30,7 +30,7 @@ def set_odor_simple(ors, slot, odor, c, n):
     # c - concentration in "dilution terms", so values 1e-7 ... 1e-1
     # n - Hill coefficient
     kp1cn= np.power(odor*c*2000,n)
-    print(kp1cn)
+    # print(kp1cn)
     km1= 0.025
     kp2= 0.025
     km2= 0.025
