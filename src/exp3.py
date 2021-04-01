@@ -10,11 +10,11 @@ import os
 from ALsimParameters import std_paras
 
 """
-experiment to investigate the effect of decreasing response with higher concentration for a single odor but for different breadth of odour activation from very narrow to very broad
+experiment to investigate the effect of decreasing response with higher concentration for binary mixtures of two odours, one 'broad' of sigma=10 and one narrow at sigma=1. The odours are presented in a synchronous mixture for 3s and with 24x24 concentration combinations. 
 """
 
 if len(sys.argv) < 2:
-    print("usage: python exp2.py <run#>")
+    print("usage: python exp3.py <run#>")
     exit()
 
 ino= int(sys.argv[1])

@@ -27,7 +27,7 @@ N= {
 }
 
 
-def ALsim(odors, hill_exp, paras):
+def ALsim(odors, hill_exp, paras, lns_gsyn= None):
     path = os.path.isdir(paras["dirname"])
     if not path:
         print("making dir "+paras["dirname"])
@@ -100,18 +100,42 @@ def ALsim(odors, hill_exp, paras):
                                                 )
     # Connect LNs to PNs
     if paras["n"]["LNs"] > 0 and paras["n"]["PNs"] > 0:
-        lns_pns =  model.add_synapse_population("LNs_PNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
+        if lns_gsyn:
+            the_lns_gsyn= np.repeat(lns_gsyn, repeats=paras["n"]["LNs"], axis=0)
+            the_lns_gsyn= np.repeat(the_lns_gsyn, repeats=paras["n"]["PNs"], axis=1)
+            the_lns_gsyn*= paras["lns_pns_g"]
+            lns_pns =  model.add_synapse_population("LNs_PNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
+                                                lns, pns,
+                                                "StaticPulse", {}, {"g": the_lns_gsyn}, {}, {},
+                                                "ExpCond", paras["lns_pns_post_params"], {}
+                                                )
+            print("Set explicit LN -> PN inhibition matrix")
+        else:
+            lns_pns =  model.add_synapse_population("LNs_PNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
                                                 lns, pns,
                                                 "StaticPulse", {}, {"g": init_var(lns_pns_conn_init, {"n_pn": paras["n"]["PNs"],"n_ln": paras["n"]["LNs"],"g": paras["lns_pns_g"]})}, {}, {},
                                                 "ExpCond", paras["lns_pns_post_params"], {}
                                                 )
+            print("Set homogeneous LN -> PN inhibition matrix using initvar snippet")
     # Connect LNs to LNs
     if paras["n"]["LNs"] > 0:
-        lns_lns =  model.add_synapse_population("LNs_LNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
+        if lns_gsyn:
+            the_lns_gsyn= np.repeat(lns_gsyn, repeats=paras["n"]["LNs"], axis=0)
+            the_lns_gsyn= np.repeat(the_lns_gsyn, repeats=paras["n"]["LNs"], axis=1)
+            the_lns_gsyn*= paras["lns_lns_g"]
+            lns_lns =  model.add_synapse_population("LNs_LNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
+                                                lns, lns,
+                                                "StaticPulse", {}, {"g": the_lns_gsyn}, {}, {},
+                                                "ExpCond", paras["lns_lns_post_params"], {}
+                                                )
+            print("Set explicit LN -> LN inhibition matrix")
+        else:
+            lns_lns =  model.add_synapse_population("LNs_LNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
                                                 lns, lns,
                                                 "StaticPulse", {}, {"g": init_var(lns_lns_conn_init,{"n_ln": paras["n"]["LNs"],"g": paras["lns_lns_g"]})}, {}, {},
                                                 "ExpCond", paras["lns_lns_post_params"], {}
                                                 )
+            print("Set homogeneous LN -> LN inhibition matrix using initvar snippet")
     print("building model ...");
     # Build and load model
     model.build()
