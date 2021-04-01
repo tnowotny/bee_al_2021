@@ -129,7 +129,7 @@ for i in range(N_odour):
         sub_prot= {
             "t": t_off+3000.0,
             "odor": i,
-            "ochn": str(i),
+            "ochn": str(0),
             "concentration": 0.0,
         }
         paras["protocol"].append(sub_prot)
