@@ -104,6 +104,7 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
             the_lns_gsyn= np.repeat(lns_gsyn, repeats=paras["n"]["LNs"], axis=0)
             the_lns_gsyn= np.repeat(the_lns_gsyn, repeats=paras["n"]["PNs"], axis=1)
             the_lns_gsyn*= paras["lns_pns_g"]
+            the_lns_gsyn= np.reshape(the_lns_gsyn, paras["n"]["LNs"]*paras["n"]["PNs"])
             lns_pns =  model.add_synapse_population("LNs_PNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
                                                 lns, pns,
                                                 "StaticPulse", {}, {"g": the_lns_gsyn}, {}, {},
@@ -123,6 +124,7 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
             the_lns_gsyn= np.repeat(lns_gsyn, repeats=paras["n"]["LNs"], axis=0)
             the_lns_gsyn= np.repeat(the_lns_gsyn, repeats=paras["n"]["LNs"], axis=1)
             the_lns_gsyn*= paras["lns_lns_g"]
+            the_lns_gsyn= np.reshape(the_lns_gsyn, paras["n"]["LNs"]*paras["n"]["LNs"])
             lns_lns =  model.add_synapse_population("LNs_LNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
                                                 lns, lns,
                                                 "StaticPulse", {}, {"g": the_lns_gsyn}, {}, {},
