@@ -100,7 +100,7 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
                                                 )
     # Connect LNs to PNs
     if paras["n"]["LNs"] > 0 and paras["n"]["PNs"] > 0:
-        if lns_gsyn:
+        if lns_gsyn is not None:
             the_lns_gsyn= np.repeat(lns_gsyn, repeats=paras["n"]["LNs"], axis=0)
             the_lns_gsyn= np.repeat(the_lns_gsyn, repeats=paras["n"]["PNs"], axis=1)
             the_lns_gsyn*= paras["lns_pns_g"]
@@ -119,7 +119,7 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
             print("Set homogeneous LN -> PN inhibition matrix using initvar snippet")
     # Connect LNs to LNs
     if paras["n"]["LNs"] > 0:
-        if lns_gsyn:
+        if lns_gsyn is not None:
             the_lns_gsyn= np.repeat(lns_gsyn, repeats=paras["n"]["LNs"], axis=0)
             the_lns_gsyn= np.repeat(the_lns_gsyn, repeats=paras["n"]["LNs"], axis=1)
             the_lns_gsyn*= paras["lns_lns_g"]
