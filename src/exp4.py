@@ -139,7 +139,7 @@ paras["t_total"]= t_off
 print("We are running for a total simulated time of {}ms".format(t_off))
 
 if __name__ == "__main__":
-    state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras, lns_gsyn= lns_gsyn)
+    state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras, lns_gsyn= correl)
 
     if paras["plotting"]:
         exp1_plots(state_bufs, spike_t, spike_ID, paras, display=plotdisplay)
