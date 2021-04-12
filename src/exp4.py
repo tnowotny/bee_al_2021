@@ -24,10 +24,10 @@ if len(sys.argv) < 2:
     print("usage: python exp4.py <run#>")
     exit()
 
-ino= int(sys.argv[1])
+ino= float(sys.argv[1])
 paras= std_paras()
 
-if ino == -1:
+if ino == -100:
     paras["lns_pns_g"]= 0
     paras["lns_lns_g"]= 0
 else:
@@ -72,13 +72,13 @@ paras["plot_sdf"]= {
     "LNs": list(range(74,87,2))
     }
 
-label= "test_odours"
+label= "test_new"
 paras["label"]= label+"_"+str(ino)
 
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
 # work on receptors tiling the space of possible sigmoid responses
 
-hill_new= True
+hill_new= False
 
 if hill_new:
     hill_exp= np.random.uniform(0.5, 1.5, paras["n_glo"])
@@ -87,7 +87,7 @@ else:
     hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
 
 # Let's do a progression of broadening odours
-odor_new= True
+odor_new= False
 
 if odor_new:
     odors= None
