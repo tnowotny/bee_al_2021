@@ -72,13 +72,13 @@ paras["plot_sdf"]= {
 #    "LNs": list(range(74,87,2))
     }
 
-label= "two_odours"
+label= "test_new"
 paras["label"]= label+"_"+str(ino)
 
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
 # work on receptors tiling the space of possible sigmoid responses
 
-hill_new= False
+hill_new= True
 
 if hill_new:
     hill_exp= np.random.uniform(0.5, 1.5, paras["n_glo"])
@@ -87,7 +87,7 @@ else:
     hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
 
 # Let's do a progression of broadening odours
-odor_new= False
+odor_new= True
 
 if odor_new:
     odors= None
@@ -128,8 +128,12 @@ for c1 in range(24):
             "concentration": 1e-7*np.power(base,c1),
         }
         paras["protocol"].append(sub_prot)
-        sub_prot["odor"]= o2
-        sub_prot["ochn"]= "1"
+        sub_prot= {
+            "t": t_off,
+            "odor": o2,
+            "ochn": "1",
+            "concentration": 1e-7*np.power(base,c2),
+        }
         paras["protocol"].append(sub_prot)        
         sub_prot= {
             "t": t_off+3000.0,
@@ -138,8 +142,12 @@ for c1 in range(24):
             "concentration": 0.0,
         }
         paras["protocol"].append(sub_prot)
-        sub_prot["odor"]= o2
-        sub_prot["ochn"]= "1"
+        sub_prot= {
+            "t": t_off+3000.0,
+            "odor": o2,
+            "ochn": "1",
+            "concentration": 0.0,
+        }
         paras["protocol"].append(sub_prot)
         t_off+= 6000.0;
 
