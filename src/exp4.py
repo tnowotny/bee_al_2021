@@ -57,19 +57,19 @@ paras["rec_state"]= [
 paras["rec_spikes"]= [
 #    "ORNs",
     "PNs",
-    "LNs"
+#    "LNs"
     ]
 
 paras["plot_raster"]= [
 #    "ORNs",
     "PNs",
-    "LNs"
+#    "LNs"
     ]
 
 paras["plot_sdf"]= {
 #    "ORNs": range(74,86,2),
     "PNs": list(range(74,87,2)),
-    "LNs": list(range(74,87,2))
+#    "LNs": list(range(74,87,2))
     }
 
 label= "test_new"
