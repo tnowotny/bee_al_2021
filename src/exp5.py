@@ -31,8 +31,8 @@ if ino == -100:
     paras["lns_pns_g"]= 0
     paras["lns_lns_g"]= 0
 else:
-    paras["lns_pns_g"]*= 0.1*np.power(np.sqrt(10),ino)
-    paras["lns_lns_g"]*= 0.1*np.power(np.sqrt(10),ino)
+    paras["lns_pns_g"]*= np.power(np.sqrt(10),ino)
+    paras["lns_lns_g"]*= np.power(np.sqrt(10),ino)
 
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
@@ -106,8 +106,8 @@ else:
     odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
     oNo= odors.shape[0]
 
-correl= np.corrcoef(odors,rowvar=False)
-correl= correl/2.0+1.0
+correl= np.cov(odors,rowvar=False)
+correl= np.maximum(0.0, correl)
 for i in range(paras["n_glo"]):
     correl[i,i]= 0.0
 
