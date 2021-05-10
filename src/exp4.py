@@ -72,7 +72,7 @@ paras["plot_sdf"]= {
 #    "LNs": list(range(74,87,2))
     }
 
-label= "test_new"
+label= "test_selfI"
 paras["label"]= label+"_"+str(ino)
 
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
@@ -108,8 +108,6 @@ else:
 
 correl= np.cov(odors,rowvar=False)
 correl= np.maximum(0.0, correl)
-for i in range(paras["n_glo"]):
-    correl[i,i]= 0.0
 
 # Now, let's make a protocol where each odor is presented for 3 secs with
 # 3 second breaks and at each of 24 concentration values
