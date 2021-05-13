@@ -17,7 +17,7 @@ experiment to investigate the effect of decreasing response with higher concentr
 """
 
 paras= std_paras()
-
+paras["version"]= "correlations and clipped Gaussians; branch clipped_gauss, commit c3c41aa9a33f3effa2cde7cee06538b07793bc46 (HEAD -> clipped_gauss, origin/clipped_gauss)"
 paras["N_odour"]= 100
 paras["mu_sig"]= 8
 paras["sig_sig"]= 2
