@@ -109,14 +109,21 @@ else:
 correl= np.cov(odors,rowvar=False)
 correl= np.maximum(0.0, correl)
 
+#plt.figure()
+#plt.imshow(correl)
+#plt.colorbar()
+#plt.show()
+#exit(1)
+#correl= np.zeros((paras["n_glo"],paras["n_glo"]))
+
 # Now, let's make a protocol where each odor is presented for 3 secs with
 # 3 second breaks and at each of 24 concentration values
 paras["protocol"]= []
 t_off= 3000.0
 base= np.power(10,0.25)
 
-o1= 13
-o2= 30
+o1= 22
+o2= 43
 for c1 in range(24):
     for c2 in range(24):
         sub_prot= {
