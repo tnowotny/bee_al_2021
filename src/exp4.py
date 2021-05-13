@@ -119,7 +119,7 @@ paras["protocol"]= []
 t_off= 3000.0
 base= np.power(10,0.25)
 
-for i in range(N_odour):
+for i in range(paras["N_odour"]):
     for c in range(24):
         sub_prot= {
             "t": t_off,
