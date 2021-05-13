@@ -16,16 +16,18 @@ experiment to investigate the effect of decreasing response with higher concentr
 2. the Gaussian odour profile is over a random permutation of the glomeruli.
 """
 
-N_odour= 100
-mu_sig= 8
-sig_sig= 2
+paras= std_paras()
+
+paras["N_odour"]= 100
+paras["mu_sig"]= 8
+paras["sig_sig"]= 2
+paras["odor_clip"]= 0.05
 
 if len(sys.argv) < 2:
     print("usage: python exp4.py <run#>")
     exit()
 
 ino= float(sys.argv[1])
-paras= std_paras()
 
 if ino == -100:
     paras["lns_pns_g"]= 0
@@ -87,14 +89,14 @@ else:
     hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
 
 # Let's do a progression of broadening odours
-odor_new= False
+odor_new= True
 
 if odor_new:
     odors= None
     odor_sigma= np.array([ 1.0, 10.0 ])
-    for i in range(N_odour):
-        sigma= random.gauss(mu_sig,sig_sig)
-        od= gauss_odor(paras["n_glo"], 0, sigma)
+    for i in range(paras["N_odour"]):
+        sigma= random.gauss(paras["mu_sig"],paras["sig_sig"])
+        od= clipped_gauss_odor(paras["n_glo"], 0, sigma, paras["odor_clip"])
         random.shuffle(od)
         print(od)
         if odors is None:
