@@ -60,7 +60,6 @@ def gauss_odor(n_glo, m, sig):
 def clipped_gauss_odor(n_glo, m, sig, clip):
     # clip is the minimum activation; all other points in the tails are clipped to 0
     od= gauss_odor(n_glo, m, sig)
-    print(od)
     od= np.maximum(od-clip, 0)
     od[od > 0]= od[od > 0]+clip
     return od

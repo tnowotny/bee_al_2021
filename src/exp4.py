@@ -100,7 +100,6 @@ if odor_new:
             sigma= random.gauss(paras["mu_sig"],paras["sig_sig"])
         od= clipped_gauss_odor(paras["n_glo"], 0, sigma, paras["odor_clip"])
         random.shuffle(od)
-        print(od)
         if odors is None:
             odors= np.copy(od)
         else:
