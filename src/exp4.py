@@ -19,8 +19,9 @@ experiment to investigate the effect of decreasing response with higher concentr
 paras= std_paras()
 paras["version"]= "correlations and clipped Gaussians; branch clipped_gauss, commit c3c41aa9a33f3effa2cde7cee06538b07793bc46 (HEAD -> clipped_gauss, origin/clipped_gauss)"
 paras["N_odour"]= 100
-paras["mu_sig"]= 8
-paras["sig_sig"]= 2
+paras["mu_sig"]= 7
+paras["sig_sig"]= 4
+paras["min_sig"]= 2
 paras["odor_clip"]= 0.05
 
 if len(sys.argv) < 2:
@@ -59,19 +60,19 @@ paras["rec_state"]= [
 paras["rec_spikes"]= [
 #    "ORNs",
     "PNs",
-    "LNs"
+#    "LNs"
     ]
 
 paras["plot_raster"]= [
 #    "ORNs",
     "PNs",
-    "LNs"
+#    "LNs"
     ]
 
 paras["plot_sdf"]= {
 #    "ORNs": range(74,86,2),
     "PNs": list(range(74,87,2)),
-    "LNs": list(range(74,87,2))
+#    "LNs": list(range(74,87,2))
     }
 
 label= "test_new"
@@ -80,10 +81,10 @@ paras["label"]= label+"_"+str(ino)
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
 # work on receptors tiling the space of possible sigmoid responses
 
-hill_new= False
+hill_new= True
 
 if hill_new:
-    hill_exp= np.random.uniform(0.5, 1.5, paras["n_glo"])
+    hill_exp= np.random.uniform(0.7, 1.2, paras["n_glo"])
     np.save(paras["dirname"]+"/"+label+"_hill",hill_exp)
 else:
     hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
@@ -95,7 +96,9 @@ if odor_new:
     odors= None
     odor_sigma= np.array([ 1.0, 10.0 ])
     for i in range(paras["N_odour"]):
-        sigma= random.gauss(paras["mu_sig"],paras["sig_sig"])
+        sigma= 0
+        while sigma < paras["min_sig"]:
+            sigma= random.gauss(paras["mu_sig"],paras["sig_sig"])
         od= clipped_gauss_odor(paras["n_glo"], 0, sigma, paras["odor_clip"])
         random.shuffle(od)
         print(od)
