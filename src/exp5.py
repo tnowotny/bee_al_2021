@@ -84,20 +84,22 @@ if connect_I == "corr0":
     for i in range(paras["n_glo"]):
         correl[i,i]= 0.0
     print("AL inhibition with correlation, no self-inhibition")
-else if connect_I == "corr1":
-    correl= np.corrcoef(odors,rowvar=False)
-    correl= (correl+1.0)/2.0
-    print("AL inhibition with correlation and self-inhibition")
-else if connect_I == "cov0":
-    correl= np.cov(odors,rowvar=False)
-    correl= np.maximum(0.0, correl)
-    for i in range(paras["n_glo"]):
-        correl[i,i]= 0.0
-    print("AL inhibition with covariance, no self-inhibition")
 else:
-    correl= np.cov(odors,rowvar=False)
-    correl= np.maximum(0.0, correl)
-    print("AL inhibition with covariance and self-inhibition")
+    if connect_I == "corr1":
+        correl= np.corrcoef(odors,rowvar=False)
+        correl= (correl+1.0)/2.0
+        print("AL inhibition with correlation and self-inhibition")
+    else:
+        if connect_I == "cov0":
+            correl= np.cov(odors,rowvar=False)
+            correl= np.maximum(0.0, correl)
+            for i in range(paras["n_glo"]):
+                correl[i,i]= 0.0
+            print("AL inhibition with covariance, no self-inhibition")
+        else:
+            correl= np.cov(odors,rowvar=False)
+            correl= np.maximum(0.0, correl)
+            print("AL inhibition with covariance and self-inhibition")
 
 # Now, let's make a protocol where each odor is presented for 3 secs with
 # 3 second breaks and at each of 24 concentration values
