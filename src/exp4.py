@@ -18,16 +18,17 @@ experiment to investigate the effect of decreasing response with higher concentr
 
 paras= std_paras()
 paras["N_odour"]= 100
-paras["mu_sig"]= 7
-paras["sig_sig"]= 4
-paras["min_sig"]= 2
+paras["mu_sig"]= 6
+paras["sig_sig"]= 2
+paras["min_sig"]= 3
 paras["odor_clip"]= 0.05
 
-if len(sys.argv) < 2:
-    print("usage: python exp4.py <run#>")
+if len(sys.argv) < 3:
+    print("usage: python exp4.py <run#> <connect_I: corr0/corr1/cov0/cov1")
     exit()
 
 ino= float(sys.argv[1])
+connect_I= sys.argv[2]
 
 if ino == -100:
     paras["lns_pns_g"]= 0
@@ -80,7 +81,7 @@ paras["label"]= label+"_"+str(ino)
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
 # work on receptors tiling the space of possible sigmoid responses
 
-hill_new= True
+hill_new= False
 
 if hill_new:
     hill_exp= np.random.uniform(0.7, 1.2, paras["n_glo"])
@@ -89,7 +90,7 @@ else:
     hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
 
 # Let's do a progression of broadening odours
-odor_new= True
+odor_new= False
 
 if odor_new:
     odors= None
@@ -109,10 +110,26 @@ else:
     odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
     oNo= odors.shape[0]
 
-correl= np.corrcoef(odors,rowvar=False)
-correl= (correl+1.0)/2.0
-for i in range(paras["n_glo"]):
-    correl[i,i]= 0.0
+if connect_I == "corr0":
+    correl= np.corrcoef(odors,rowvar=False)
+    correl= (correl+1.0)/2.0
+    for i in range(paras["n_glo"]):
+        correl[i,i]= 0.0
+    print("AL inhibition with correlation, no self-inhibition")
+else if connect_I == "corr1":
+    correl= np.corrcoef(odors,rowvar=False)
+    correl= (correl+1.0)/2.0
+    print("AL inhibition with correlation and self-inhibition")
+else if connect_I == "cov0":
+    correl= np.cov(odors,rowvar=False)
+    correl= np.maximum(0.0, correl)
+    for i in range(paras["n_glo"]):
+        correl[i,i]= 0.0
+    print("AL inhibition with covariance, no self-inhibition")
+else:
+    correl= np.cov(odors,rowvar=False)
+    correl= np.maximum(0.0, correl)
+    print("AL inhibition with covariance and self-inhibition")
 
 # Now, let's make a protocol where each odor is presented for 3 secs with
 # 3 second breaks and at each of 24 concentration values
