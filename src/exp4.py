@@ -34,8 +34,8 @@ if ino == -100:
     paras["lns_pns_g"]= 0
     paras["lns_lns_g"]= 0
 else:
-    paras["lns_pns_g"]*= 0.1*np.power(np.sqrt(10),ino)
-    paras["lns_lns_g"]*= 0.1*np.power(np.sqrt(10),ino)
+    paras["lns_pns_g"]*= np.power(np.sqrt(10),ino)
+    paras["lns_lns_g"]*= np.power(np.sqrt(10),ino)
 
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
@@ -112,14 +112,14 @@ else:
 
 if connect_I == "corr0":
     correl= np.corrcoef(odors,rowvar=False)
-    correl= (correl+1.0)/2.0
+    correl= (correl+1.0)/20.0 # extra factor 10 in comparison to covariance ...
     for i in range(paras["n_glo"]):
         correl[i,i]= 0.0
     print("AL inhibition with correlation, no self-inhibition")
 else:
     if connect_I == "corr1":
         correl= np.corrcoef(odors,rowvar=False)
-        correl= (correl+1.0)/2.0
+        correl= (correl+1.0)/20.0  # extra factor 10 in comparison to covariance ...
         print("AL inhibition with correlation and self-inhibition")
     else:
         if connect_I == "cov0":
