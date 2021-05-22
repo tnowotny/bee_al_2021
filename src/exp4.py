@@ -76,7 +76,7 @@ paras["plot_sdf"]= {
     }
 
 label= "test_new"
-paras["label"]= label+"_"+str(ino)
+paras["label"]= label+"_"+connect_I+"_"+str(ino)
 
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
 # work on receptors tiling the space of possible sigmoid responses
