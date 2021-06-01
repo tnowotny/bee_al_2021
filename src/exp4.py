@@ -18,8 +18,8 @@ experiment to investigate the effect of decreasing response with higher concentr
 
 paras= std_paras()
 paras["N_odour"]= 100
-paras["mu_sig"]= 6
-paras["sig_sig"]= 2
+paras["mu_sig"]= 5
+paras["sig_sig"]= 0.5
 paras["min_sig"]= 3
 paras["odor_clip"]= 0.05
 
@@ -94,8 +94,7 @@ odor_new= False
 
 if odor_new:
     odors= None
-    odor_sigma= np.array([ 1.0, 10.0 ])
-    for i in range(paras["N_odour"]):
+    for i in range(paras["N_odour"]-3):
         sigma= 0
         while sigma < paras["min_sig"]:
             sigma= random.gauss(paras["mu_sig"],paras["sig_sig"])
@@ -108,7 +107,6 @@ if odor_new:
     np.save(paras["dirname"]+"/"+label+"_odors",odors)
 else:
     odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
-    oNo= odors.shape[0]
 
 if connect_I == "corr0":
     correl= np.corrcoef(odors,rowvar=False)
@@ -132,6 +130,17 @@ else:
             correl= np.cov(odors,rowvar=False)
             correl= np.maximum(0.0, correl)
             print("AL inhibition with covariance and self-inhibition")
+
+# let's make 3 extra odours: 5, 10, 15 wide. Each shall contain the most inhibited glomeruli
+csum= np.sum(correl,axis= 1)
+idx= np.argsort(csum)
+for sigma in [ 5, 10, 15 ]:
+    od= clipped_gauss_odor(paras["n_glo"], 0, sigma, paras["odor_clip"])
+    sod= np.sort(od)
+    od[idx]= sod
+    odors= np.vstack((np.copy(od),odors))
+
+print(odors.shape)
 
 # Now, let's make a protocol where each odor is presented for 3 secs with
 # 3 second breaks and at each of 24 concentration values
