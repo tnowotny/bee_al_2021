@@ -16,12 +16,21 @@ experiment to investigate the effect of decreasing response with higher concentr
 2. the Gaussian odour profile is over a random permutation of the glomeruli.
 """
 
-if len(sys.argv) < 3:
-    print("usage: python exp5.py <run#> <connect_I: corr0/corr1/cov0/cov1")
+if len(sys.argv) < 5:
+    print("usage: python exp5.py <run#> <connect_I: corr0/corr1/cov0/cov1> <odor 1> <odor 2>" )
     exit()
 
 ino= float(sys.argv[1])
+connect_I= sys.argv[2]
+o1= int(sys.argv[3])
+o2= int(sys.argv[4])
+
 paras= std_paras()
+paras["N_odour"]= 100
+paras["mu_sig"]= 5
+paras["sig_sig"]= 0.5
+paras["min_sig"]= 3
+paras["odor_clip"]= 0.05
 
 if ino == -100:
     paras["lns_pns_g"]= 0
@@ -69,7 +78,7 @@ paras["plot_sdf"]= {
     }
 
 label= "test_two"
-paras["label"]= label+"_"+str(ino)
+paras["label"]= label+"_"+str(ino)+"_"+str(o1)+"_"+str(o2)
 
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
 # work on receptors tiling the space of possible sigmoid responses
@@ -101,14 +110,23 @@ else:
             correl= np.maximum(0.0, correl)
             print("AL inhibition with covariance and self-inhibition")
 
+# let's make 3 extra odours: 5, 10, 15 wide. Each shall contain the most inhibited glomeruli
+csum= np.sum(correl,axis= 1)
+idx= np.argsort(csum)
+for sigma in [ 5, 10, 15 ]:
+    od= clipped_gauss_odor(paras["n_glo"], 0, sigma, paras["odor_clip"])
+    sod= np.sort(od)
+    od[idx]= sod
+    odors= np.vstack((np.copy(od),odors))
+
+print(odors.shape)
+
 # Now, let's make a protocol where each odor is presented for 3 secs with
 # 3 second breaks and at each of 24 concentration values
 paras["protocol"]= []
 t_off= 3000.0
 base= np.power(10,0.25)
 
-o1= 15
-o2= 28
 for c1 in range(24):
     for c2 in range(24):
         sub_prot= {
