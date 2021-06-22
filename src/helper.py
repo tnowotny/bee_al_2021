@@ -29,10 +29,11 @@ def set_odor_simple(ors, slot, odor, c, n):
     # odor - array containing the relative activation of OR types (size num glo), normalized to sum 1
     # c - concentration in "dilution terms", so values 1e-7 ... 1e-1
     # n - Hill coefficient
-    kp1cn= np.power(odor*c*2000,n)
+    od= np.squeeze(odor)
+    kp1cn= np.power(od[:,0]*c*2000,n)
     # print(kp1cn)
     km1= 0.025
-    kp2= 0.025
+    kp2= od[:,1]
     km2= 0.025
 
     vname= "kp1cn_"+slot
@@ -44,22 +45,25 @@ def set_odor_simple(ors, slot, odor, c, n):
     vname= "km2_"+slot
     ors.vars[vname].view[:]= km2
     
-    
-def gauss_odor(n_glo, m, sig):
+
+def gauss_odor(n_glo: int, m: float, sig: float, clip: float = 0.0, a_min: float = 0.025, a_max: float = 0.025, hom_a: bool = True) -> np.array:
+    # NOTE: We do not normalise by area. This is a) unrealistic (most activated
+    # glomerulus markedly less activated in a broadly tuned odour than in a
+    # narrowly tuned odour) and b) becomes impractical when trying to do "fair
+    # comparison" systematically for odours that are wide/narrow
+    # if hom_a is True, all glomeruli have the same activation rate but individual to the odor
+    odor= np.zeros((n_glo,2))
     d= np.arange(0,n_glo)
     d= d-m
     d= np.minimum(np.abs(d),np.abs(d+n_glo))
     d= np.minimum(np.abs(d),np.abs(d-n_glo))
     od= np.exp(-np.power(d,2)/(2*np.power(sig,2)))
-    # NOTE: We do not normalise by area. This is a) unrealistic (most activated
-    # glomerulus markedly less activated in a broadly tuned odour than in a
-    # narrowly tuned odour) and b) becomes impractical when trying to do "fair
-    # comparison" systematically for odours that are wide/narrow
-    return od
-    
-def clipped_gauss_odor(n_glo, m, sig, clip):
-    # clip is the minimum activation; all other points in the tails are clipped to 0
-    od= gauss_odor(n_glo, m, sig)
     od= np.maximum(od-clip, 0)
-    od[od > 0]= od[od > 0]+clip
-    return od
+    od[od > 0]= od[od > 0]+clip    
+    odor[:,0]= od
+    if hom_a:
+        odor[:,1]= np.random.uniform(a_min,a_max)
+    else:
+        odor[:,1]= np.random.uniform(a_min,a_max,n_glo)
+        
+    return odor
