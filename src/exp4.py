@@ -21,7 +21,7 @@ paras["N_odour"]= 100
 paras["mu_sig"]= 5
 paras["sig_sig"]= 0.5
 paras["min_sig"]= 3
-paras["odor_clip"]= 0.05
+paras["odor_clip"]= 1e-6
 paras["act_rate_min"]= 0.01
 paras["act_rate_max"]= 0.03
 
@@ -62,7 +62,7 @@ paras["rec_state"]= [
 paras["rec_spikes"]= [
 #    "ORNs",
     "PNs",
-#    "LNs"
+    "LNs"
     ]
 
 paras["plot_raster"]= [
@@ -86,13 +86,13 @@ paras["label"]= label+"_"+connect_I+"_"+str(ino)
 hill_new= True
 
 if hill_new:
-    hill_exp= np.random.uniform(0.9, 1.1, paras["n_glo"])
+    hill_exp= np.random.uniform(0.7, 0.8, paras["n_glo"])
     np.save(paras["dirname"]+"/"+label+"_hill",hill_exp)
 else:
     hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
 
 # Let's do a progression of broadening odours
-odor_new= False
+odor_new= True
 
 if odor_new:
     odors= []
@@ -108,6 +108,7 @@ if odor_new:
 else:
     odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
 
+HOMO_LN_GSYN= False
 if connect_I == "corr0":
     correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"]-3,paras["n_glo"]),rowvar=False)
     correl= (correl+1.0)/20.0 # extra factor 10 in comparison to covariance ...
@@ -127,10 +128,14 @@ else:
                 correl[i,i]= 0.0
             print("AL inhibition with covariance, no self-inhibition")
         else:
-            correl= np.cov(odors[:,:,0].reshape(paras["N_odour"]-3,paras["n_glo"]),rowvar=False)
-            correl= np.maximum(0.0, correl)
-            print("AL inhibition with covariance and self-inhibition")
-
+            if connect_I == "cov1":
+                correl= np.cov(odors[:,:,0].reshape(paras["N_odour"]-3,paras["n_glo"]),rowvar=False)
+                correl= np.maximum(0.0, correl)
+                print("AL inhibition with covariance and self-inhibition")
+            else:
+                correl= np.ones((paras["n_glo"],paras["n_glo"]))
+                HOMO_LN_GSYN= True
+                
 # let's make 3 extra odours: 5, 10, 15 wide. Each shall contain the most inhibited glomeruli
 csum= np.sum(correl,axis= 1)
 idx= np.argsort(csum)
@@ -138,7 +143,7 @@ for sigma in [ 5, 10, 15 ]:
     od= gauss_odor(paras["n_glo"], 0, sigma, paras["odor_clip"], 0.01, 0.01)
     # the extra "diagnostic" odors all activate very weakly
     sod= np.sort(od[:,0])
-    od[idx,0]= sod
+    od[idx,0]= sod*100
     odors= np.vstack((np.reshape(np.copy(od),(1,paras["n_glo"],2)),odors))
 
 print(odors.shape)
@@ -150,8 +155,8 @@ paras["protocol"]= []
 t_off= 3000.0
 base= np.power(10,0.25)
 
-#for i in range(paras["N_odour"]):
-for i in range(5):
+for i in range(paras["N_odour"]):
+#for i in range(5):
     for c in range(24):
         sub_prot= {
             "t": t_off,
@@ -173,7 +178,10 @@ paras["t_total"]= t_off
 print("We are running for a total simulated time of {}ms".format(t_off))
 
 if __name__ == "__main__":
-    state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras, lns_gsyn= correl)
+    if HOMO_LN_GSYN:
+        state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras)
+    else:
+        state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras, lns_gsyn= correl)
 
     if paras["plotting"]:
         exp1_plots(state_bufs, spike_t, spike_ID, paras, display=plotdisplay)
