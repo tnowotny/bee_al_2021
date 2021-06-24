@@ -86,13 +86,13 @@ paras["label"]= label+"_"+connect_I+"_"+str(ino)
 hill_new= True
 
 if hill_new:
-    hill_exp= np.random.uniform(0.7, 1.2, paras["n_glo"])
+    hill_exp= np.random.uniform(0.9, 1.1, paras["n_glo"])
     np.save(paras["dirname"]+"/"+label+"_hill",hill_exp)
 else:
     hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
 
 # Let's do a progression of broadening odours
-odor_new= True
+odor_new= False
 
 if odor_new:
     odors= []
@@ -150,7 +150,8 @@ paras["protocol"]= []
 t_off= 3000.0
 base= np.power(10,0.25)
 
-for i in range(paras["N_odour"]):
+#for i in range(paras["N_odour"]):
+for i in range(5):
     for c in range(24):
         sub_prot= {
             "t": t_off,
