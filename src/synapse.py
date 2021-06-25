@@ -158,7 +158,7 @@ lns_pns_conn_init = create_custom_init_var_snippet_class(
 """
 Parameter values for the LN to PN synapse
 """
-lns_pns_g= 0.0003
+lns_pns_g= 0.0001
 
 """
 Parameter values for the LN to PN post-synapse
@@ -185,7 +185,7 @@ lns_lns_conn_init = create_custom_init_var_snippet_class(
 """
 Parameter values for the LN to LN synapse
 """
-lns_lns_g= 0.0001
+lns_lns_g= 0.00003
 
 
 """

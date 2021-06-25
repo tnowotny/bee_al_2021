@@ -46,24 +46,41 @@ def set_odor_simple(ors, slot, odor, c, n):
     ors.vars[vname].view[:]= km2
     
 
-def gauss_odor(n_glo: int, m: float, sig: float, clip: float = 0.0, a_min: float = 0.025, a_max: float = 0.025, hom_a: bool = True) -> np.array:
+def gauss_odor(n_glo: int, m: float, sig: float, A: float = 1.0, clip: float = 0.0, m_a: float = 0.025, sig_a: float = 0.0, min_a: float = 0.01, max_a: float = 0.05, hom_a: bool = True) -> np.array:
     # NOTE: We do not normalise by area. This is a) unrealistic (most activated
     # glomerulus markedly less activated in a broadly tuned odour than in a
     # narrowly tuned odour) and b) becomes impractical when trying to do "fair
     # comparison" systematically for odours that are wide/narrow
-    # if hom_a is True, all glomeruli have the same activation rate but individual to the odor
+    # n_glo: Number of gomeruli
+    # m: midpoint of Gaussian binding profile
+    # sig: standard deviation of Gaussian binding profile
+    # A: Amplitude of Gaussian binding profile
+    # clip: cut-off threshold for Gaussian binding profile: Glomeruli with binding rateless than this are set to binding rate 0
+    # m_a: mean value for activation rate
+    # sig_a: standard deviation of activation rate
+    # min_a: minimal activation rate allowed
+    # max_a: maximal activation rate allowed
+    # if hom_a is True, all glomeruli have the same activation rate but individual to the odor, otherwise individual rates
     odor= np.zeros((n_glo,2))
     d= np.arange(0,n_glo)
     d= d-m
     d= np.minimum(np.abs(d),np.abs(d+n_glo))
     d= np.minimum(np.abs(d),np.abs(d-n_glo))
     od= np.exp(-np.power(d,2)/(2*np.power(sig,2)))
+    od*= np.power(10,A)
     od= np.maximum(od-clip, 0)
     od[od > 0]= od[od > 0]+clip    
     odor[:,0]= od
     if hom_a:
-        odor[:,1]= np.random.uniform(a_min,a_max)
+        a= 0.0
+        while a < min_a or a > max_a:
+            a= np.random.normal(m_a,sig_a)
+        odor[:,1]= a
     else:
-        odor[:,1]= np.random.uniform(a_min,a_max,n_glo)
+        for i in range(n_glo):
+            a= 0.0
+            while a < min_a or a > max_a:
+                a= np.random.normal(m_a,sig_a)
+            odor[i,1]= a
         
     return odor

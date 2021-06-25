@@ -26,11 +26,6 @@ o1= int(sys.argv[3])
 o2= int(sys.argv[4])
 
 paras= std_paras()
-paras["N_odour"]= 100
-paras["mu_sig"]= 5
-paras["sig_sig"]= 0.5
-paras["min_sig"]= 3
-paras["odor_clip"]= 0.05
 
 if ino == -100:
     paras["lns_pns_g"]= 0
@@ -85,42 +80,37 @@ paras["label"]= label+"_"+str(ino)+"_"+str(o1)+"_"+str(o2)
 
 hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
 odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
-paras["N_odour"]= odors.shape[0]+3
+paras["N_odour"]= odors.shape[0]
 
+HOMO_LN_GSYN= False
 if connect_I == "corr0":
-    correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"]-3,paras["n_glo"]),rowvar=False)
+    correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
     correl= (correl+1.0)/20.0 # extra factor 10 in comparison to covariance ...
     for i in range(paras["n_glo"]):
         correl[i,i]= 0.0
     print("AL inhibition with correlation, no self-inhibition")
 else:
     if connect_I == "corr1":
-        correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"]-3,paras["n_glo"]),rowvar=False)
+        correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
         correl= (correl+1.0)/20.0 # extra factor 10 in comparison to covariance ...
         print("AL inhibition with correlation and self-inhibition")
     else:
         if connect_I == "cov0":
-            correl= np.cov(odors[:,:,0].reshape(paras["N_odour"]-3,paras["n_glo"]),rowvar=False)
+            correl= np.cov(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
             correl= np.maximum(0.0, correl)
             for i in range(paras["n_glo"]):
                 correl[i,i]= 0.0
             print("AL inhibition with covariance, no self-inhibition")
         else:
-            correl= np.cov(odors[:,:,0].reshape(paras["N_odour"]-3,paras["n_glo"]),rowvar=False)
-            correl= np.maximum(0.0, correl)
-            print("AL inhibition with covariance and self-inhibition")
-
-# let's make 3 extra odours: 5, 10, 15 wide. Each shall contain the most inhibited glomeruli
-csum= np.sum(correl,axis= 1)
-idx= np.argsort(csum)
-for sigma in [ 5, 10, 15 ]:
-    od= gauss_odor(paras["n_glo"], 0, sigma, paras["odor_clip"], 0.01, 0.01)
-    sod= np.sort(od[:,0])
-    od[idx,0]= sod
-    odors= np.vstack((np.reshape(np.copy(od),(1,paras["n_glo"],2)),odors))
-
-print(odors.shape)
-
+             if connect_I == "cov1":
+                 correl= np.cov(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
+                 correl= np.maximum(0.0, correl)
+                 print("AL inhibition with covariance and self-inhibition")
+             else:
+                 correl= np.ones((paras["n_glo"],paras["n_glo"]))
+                 HOMO_LN_GSYN= True
+                 print("Homogeneous AL inhibition")
+                 
 # Now, let's make a protocol where each odor is presented for 3 secs with
 # 3 second breaks and at each of 24 concentration values
 paras["protocol"]= []

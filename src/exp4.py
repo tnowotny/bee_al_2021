@@ -17,16 +17,8 @@ experiment to investigate the effect of decreasing response with higher concentr
 """
 
 paras= std_paras()
-paras["N_odour"]= 100
-paras["mu_sig"]= 5
-paras["sig_sig"]= 0.5
-paras["min_sig"]= 3
-paras["odor_clip"]= 1e-6
-paras["act_rate_min"]= 0.01
-paras["act_rate_max"]= 0.03
-
 if len(sys.argv) < 3:
-    print("usage: python exp4.py <run#> <connect_I: corr0/corr1/cov0/cov1")
+    print("usage: python exp4.py <run#> <connect_I: hom/corr0/corr1/cov0/cov1")
     exit()
 
 ino= float(sys.argv[1])
@@ -91,64 +83,64 @@ if hill_new:
 else:
     hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
 
-# Let's do a progression of broadening odours
+# Generate odors or load previously generated odors from file
 odor_new= True
 
 if odor_new:
     odors= []
-    for i in range(paras["N_odour"]-3):
+    for i in range(paras["N_odour"]-1):
         sigma= 0
         while sigma < paras["min_sig"]:
-            sigma= random.gauss(paras["mu_sig"],paras["sig_sig"])
-        od= gauss_odor(paras["n_glo"], 0, sigma, paras["odor_clip"], paras["act_rate_min"], paras["act_rate_max"])
+            sigma= np.random.normal(paras["mu_sig"],paras["sig_sig"])
+        A= -100.0
+        while A < paras["min_A"] or A > paras["max_A"]:
+            A= np.random.normal(paras["mean_A"], paras["sig_A"])
+        od= gauss_odor(paras["n_glo"], 0, sigma, A, paras["odor_clip"], paras["mean_act"], paras["sig_act"],paras["min_act"],paras["max_act"])
         random.shuffle(od)
         odors.append(np.copy(od))
+    # One "diagnostic odor" that is particularly early binding, broad, and low activating
+    sigma= 15
+    A= paras["max_A"]
+    act= 0.01
+    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, sigma, A, paras["odor_clip"], act, 0.0, 0.01)
+    odors.append(np.copy(od))
     odors= np.array(odors)
     np.save(paras["dirname"]+"/"+label+"_odors",odors)
 else:
     odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
 
+# define the inhibitory connectivity pattern in the antennal lobe either homogeneous (equal strength)
+# for HOM_LN_GSYN= True or according to correlations (corr0 without self-inhibition, corr1 with self-inhibition)
+# or according to covariance (cov0 without self-inhibition, cov1 with self-inhibition)
 HOMO_LN_GSYN= False
 if connect_I == "corr0":
-    correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"]-3,paras["n_glo"]),rowvar=False)
+    correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
     correl= (correl+1.0)/20.0 # extra factor 10 in comparison to covariance ...
     for i in range(paras["n_glo"]):
         correl[i,i]= 0.0
     print("AL inhibition with correlation, no self-inhibition")
 else:
     if connect_I == "corr1":
-        correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"]-3,paras["n_glo"]),rowvar=False)
+        correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
         correl= (correl+1.0)/20.0  # extra factor 10 in comparison to covariance ...
         print("AL inhibition with correlation and self-inhibition")
     else:
         if connect_I == "cov0":
-            correl= np.cov(odors[:,:,0].reshape(paras["N_odour"]-3,paras["n_glo"]),rowvar=False)
+            correl= np.cov(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
             correl= np.maximum(0.0, correl)
             for i in range(paras["n_glo"]):
                 correl[i,i]= 0.0
             print("AL inhibition with covariance, no self-inhibition")
         else:
             if connect_I == "cov1":
-                correl= np.cov(odors[:,:,0].reshape(paras["N_odour"]-3,paras["n_glo"]),rowvar=False)
+                correl= np.cov(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
                 correl= np.maximum(0.0, correl)
                 print("AL inhibition with covariance and self-inhibition")
             else:
                 correl= np.ones((paras["n_glo"],paras["n_glo"]))
                 HOMO_LN_GSYN= True
+                print("Homogeneous AL inhibition")
                 
-# let's make 3 extra odours: 5, 10, 15 wide. Each shall contain the most inhibited glomeruli
-csum= np.sum(correl,axis= 1)
-idx= np.argsort(csum)
-for sigma in [ 5, 10, 15 ]:
-    od= gauss_odor(paras["n_glo"], 0, sigma, paras["odor_clip"], 0.01, 0.01)
-    # the extra "diagnostic" odors all activate very weakly
-    sod= np.sort(od[:,0])
-    od[idx,0]= sod*100
-    odors= np.vstack((np.reshape(np.copy(od),(1,paras["n_glo"],2)),odors))
-
-print(odors.shape)
-print(odors[:,0,1])
-
 # Now, let's make a protocol where each odor is presented for 3 secs with
 # 3 second breaks and at each of 24 concentration values
 paras["protocol"]= []
@@ -156,7 +148,6 @@ t_off= 3000.0
 base= np.power(10,0.25)
 
 for i in range(paras["N_odour"]):
-#for i in range(5):
     for c in range(24):
         sub_prot= {
             "t": t_off,
