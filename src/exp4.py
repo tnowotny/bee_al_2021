@@ -54,7 +54,7 @@ paras["rec_state"]= [
 paras["rec_spikes"]= [
 #    "ORNs",
     "PNs",
-    "LNs"
+#    "LNs"
     ]
 
 paras["plot_raster"]= [
@@ -71,6 +71,7 @@ paras["plot_sdf"]= {
 
 label= "test_new"
 paras["label"]= label+"_"+connect_I+"_"+str(ino)
+
 
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
 # work on receptors tiling the space of possible sigmoid responses
@@ -108,6 +109,8 @@ if odor_new:
     np.save(paras["dirname"]+"/"+label+"_odors",odors)
 else:
     odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
+    oNo= odors.shape[0]
+
 
 # define the inhibitory connectivity pattern in the antennal lobe either homogeneous (equal strength)
 # for HOM_LN_GSYN= True or according to correlations (corr0 without self-inhibition, corr1 with self-inhibition)

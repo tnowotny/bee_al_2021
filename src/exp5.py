@@ -72,8 +72,10 @@ paras["plot_sdf"]= {
 #    "LNs": list(range(74,87,2))
     }
 
+
 label= "test_two"
 paras["label"]= label+"_"+str(ino)+"_"+str(o1)+"_"+str(o2)
+
 
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
 # work on receptors tiling the space of possible sigmoid responses
@@ -111,6 +113,7 @@ else:
                  HOMO_LN_GSYN= True
                  print("Homogeneous AL inhibition")
                  
+
 # Now, let's make a protocol where each odor is presented for 3 secs with
 # 3 second breaks and at each of 24 concentration values
 paras["protocol"]= []
