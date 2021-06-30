@@ -3,6 +3,7 @@ from neuron import orn_params, orn_ini, pn_params, pn_ini, ln_params, ln_ini
 from synapse import n_orn_pn, orns_pns_ini, orns_pns_post_params, n_orn_ln, orns_lns_ini, orns_lns_post_params, pns_lns_ini, pns_lns_post_params, lns_pns_g, lns_pns_post_params, lns_lns_g, lns_lns_post_params
 from ALsim import spk_rec_steps, n_glo, n, N
 import sim
+import subprocess
 
 def std_paras():
     paras= dict()
@@ -31,4 +32,19 @@ def std_paras():
     paras["n_glo"]= n_glo
     paras["n"]= n
     paras["N"]= N
+    paras["N_odour"]= 100
+    paras["mu_sig"]= 5
+    paras["sig_sig"]= 0.5
+    paras["min_sig"]= 3
+    paras["odor_clip"]= 0.0
+    paras["mean_act"]= 0.02
+    paras["sig_act"]= 0.01
+    paras["min_act"]= 0.01
+    paras["max_act"]= 0.05
+    paras["mean_A"]= 0.0
+    paras["sig_A"]= 0.5
+    paras["min_A"]= -2.0
+    paras["max_A"]= 2.0
+    result = subprocess.run(['git', 'log'], stdout=subprocess.PIPE)
+    paras["git_version"]= result.stdout.decode('utf-8').split("\n")[0]
     return paras
