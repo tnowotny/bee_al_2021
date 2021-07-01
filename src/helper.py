@@ -1,10 +1,15 @@
 import numpy as np
 
+"""
+calculate SDFs from spike times. The returned SDF has time along axis 0
+and neuron id along axis 1
+"""
+
 def make_sdf(sT, sID, allID, t0, tmax, dt, sigma):
     tleft= t0-3*sigma
     tright= tmax+3*sigma
     n= int((tright-tleft)/dt)
-    sdfs= np.zeros((len(allID),n))
+    sdfs= np.zeros((n,len(allID)))
     kwdt= 3*sigma
     i= 0
     x= np.arange(-kwdt,kwdt,dt)
@@ -16,7 +21,7 @@ def make_sdf(sT, sID, allID, t0, tmax, dt, sigma):
                 left= int((t-tleft-kwdt)/dt)
                 right= int((t-tleft+kwdt)/dt)
                 if right <= n:
-                    sdfs[sid,left:right]+=x
+                    sdfs[left:right,sid]+=x
            
     return sdfs
                   
