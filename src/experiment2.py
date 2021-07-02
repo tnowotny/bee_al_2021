@@ -56,7 +56,7 @@ paras["rec_spikes"]= [
     ]
 
 label= "run"
-paras["label"]= label+"_"+str(ino)+"_odors_"+str(o1)+"_"+str(o2)
+paras["label"]= label+"_"+connect_I+"_"+str(ino)+"_odors_"+str(o1)+"_"+str(o2)
 
 # Load odors and Hill coefficients from file. This experiment assumes that these have been
 # already generated with experiment1.py
