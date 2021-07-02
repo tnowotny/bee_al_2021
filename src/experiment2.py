@@ -55,19 +55,6 @@ paras["rec_spikes"]= [
 #    "LNs"
     ]
 
-paras["plot_raster"]= [
-#    "ORNs",
-    "PNs",
-#    "LNs"
-    ]
-
-paras["plot_sdf"]= {
-#    "ORNs": range(74,86,2),
-    "PNs": list(range(74,87,2)),
-#    "LNs": list(range(74,87,2))
-    }
-
-
 label= "run"
 paras["label"]= label+"_"+str(ino)+"_odors_"+str(o1)+"_"+str(o2)
 
