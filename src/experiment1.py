@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 from helper import *
-from exp1_plots import exp1_plots
 from ALsim import ALsim
 import sim
 import sys
@@ -27,7 +26,7 @@ The overall strength of inhibition is scaled by a command line argument "ino".
 
 paras= std_paras()
 if len(sys.argv) < 3:
-    print("usage: python exp4.py <ino> <connect_I: hom/corr0/corr1/cov0/cov1")
+    print("usage: python experiment1.py <ino> <connect_I: hom/corr0/corr1/cov0/cov1")
     exit()
 
 ino= float(sys.argv[1])

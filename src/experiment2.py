@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 from helper import *
-from exp1_plots import exp1_plots
 from ALsim import ALsim
 import sim
 import sys
@@ -15,7 +14,7 @@ Experiment to investigate the binary mixtured of two odors. Odors are defined as
 """
 
 if len(sys.argv) < 5:
-    print("usage: python exp5.py <ino> <connect_I: corr0/corr1/cov0/cov1> <odor 1> <odor 2>" )
+    print("usage: python experiment2.py <ino> <connect_I: corr0/corr1/cov0/cov1> <odor 1> <odor 2>" )
     exit()
 
 ino= float(sys.argv[1])
