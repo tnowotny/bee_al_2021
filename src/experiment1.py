@@ -90,7 +90,6 @@ if odor_new:
         while A < paras["min_A"] or A > paras["max_A"]:
             A= np.random.normal(paras["mean_A"], paras["sig_A"])
         od= gauss_odor(paras["n_glo"], 0, sigma, A, paras["odor_clip"], paras["mean_act"], paras["sig_act"],paras["min_act"],paras["max_act"])
-#        for k in range(15):
         random.shuffle(od[:,0])
         odors.append(np.copy(od))
     # Add "Geosmin" that is particularly early binding, broad, and low activating
@@ -101,7 +100,6 @@ if odor_new:
     odors.append(np.copy(od))
     odors= np.array(odors)
     np.save(paras["dirname"]+"/"+label+"_odors",odors)
-    exit(1)
 else:
     odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
     oNo= odors.shape[0]
