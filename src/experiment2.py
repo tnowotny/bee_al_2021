@@ -43,14 +43,14 @@ if not path:
 paras["use_spk_rec"]= True
 
 paras["rec_state"]= [
-    ("ORs", "ra"),
+#    ("ORs", "ra"),
 #    ("ORNs", "V"),
 #    ("ORNs", "a"),
 #    ("PNs", "V")
 ]
 
 paras["rec_spikes"]= [
-    "ORNs",
+#    "ORNs",
     "PNs",
 #    "LNs"
     ]
