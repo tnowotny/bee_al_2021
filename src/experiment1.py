@@ -53,14 +53,14 @@ paras["use_spk_rec"]= True
 
 # Control what to record
 paras["rec_state"]= [
-    ("ORs", "ra"),
+#    ("ORs", "ra"),
 #    ("ORNs", "V"),
 #    ("ORNs", "a"),
 #    ("PNs", "V")
 ]
 
 paras["rec_spikes"]= [
-    "ORNs",
+#    "ORNs",
     "PNs",
 #    "LNs"
     ]
