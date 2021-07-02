@@ -11,13 +11,11 @@ from ALsimParameters import std_paras
 import random
 
 """
-experiment to investigate the effect of decreasing response with higher concentration. In this version we generate N_odour odours randomly with the following properties: 
-1. Each odour has a a Gaussian profile of glomerulus activation with sigma drawn from Gauss(mu_sig,sig_sig). 
-2. the Gaussian odour profile is over a random permutation of the glomeruli.
+Experiment to investigate the binary mixtured of two odors. Odors are defined as in experiment1.py.
 """
 
 if len(sys.argv) < 5:
-    print("usage: python exp5.py <run#> <connect_I: corr0/corr1/cov0/cov1> <odor 1> <odor 2>" )
+    print("usage: python exp5.py <ino> <connect_I: corr0/corr1/cov0/cov1> <odor 1> <odor 2>" )
     exit()
 
 ino= float(sys.argv[1])
@@ -43,19 +41,17 @@ if not path:
     print("making dir "+paras["dirname"])
     os.makedirs(paras["dirname"])
 
-paras["plotting"]= False
-paras["plotdisplay"]= False
 paras["use_spk_rec"]= True
 
 paras["rec_state"]= [
-#    ("ORs", "ra"),
+    ("ORs", "ra"),
 #    ("ORNs", "V"),
 #    ("ORNs", "a"),
 #    ("PNs", "V")
 ]
 
 paras["rec_spikes"]= [
-#    "ORNs",
+    "ORNs",
     "PNs",
 #    "LNs"
     ]
@@ -73,18 +69,15 @@ paras["plot_sdf"]= {
     }
 
 
-label= "test_two"
-paras["label"]= label+"_"+str(ino)+"_"+str(o1)+"_"+str(o2)
+label= "run"
+paras["label"]= label+"_"+str(ino)+"_odors_"+str(o1)+"_"+str(o2)
 
-
-# Assume a uniform distribution of Hill coefficients inspired by Rospars'
-# work on receptors tiling the space of possible sigmoid responses
-
+# Load odors and Hill coefficients from file. This experiment assumes that these have been
+# already generated with experiment1.py
 hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
 odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
 paras["N_odour"]= odors.shape[0]
 
-HOMO_LN_GSYN= False
 if connect_I == "corr0":
     correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
     correl= (correl+1.0)/20.0 # extra factor 10 in comparison to covariance ...
@@ -109,8 +102,7 @@ else:
                  correl= np.maximum(0.0, correl)
                  print("AL inhibition with covariance and self-inhibition")
              else:
-                 correl= np.ones((paras["n_glo"],paras["n_glo"]))
-                 HOMO_LN_GSYN= True
+                 correl= None
                  print("Homogeneous AL inhibition")
                  
 
@@ -155,8 +147,4 @@ for c1 in range(24):
 paras["t_total"]= t_off
 print("We are running for a total simulated time of {}ms".format(t_off))
 
-if __name__ == "__main__":
-    state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras, lns_gsyn= correl)
-
-    if paras["plotting"]:
-        exp1_plots(state_bufs, spike_t, spike_ID, paras, display=plotdisplay)
+state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras, lns_gsyn= correl)

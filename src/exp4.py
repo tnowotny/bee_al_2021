@@ -11,14 +11,23 @@ from ALsimParameters import std_paras
 import random
 
 """
-experiment to investigate the effect of decreasing response with higher concentration. In this version we generate N_odour odours randomly with the following properties: 
-1. Each odour has a a Gaussian profile of glomerulus activation with sigma drawn from Gauss(mu_sig,sig_sig). 
-2. the Gaussian odour profile is over a random permutation of the glomeruli.
+Run and experiment to investigate the effect of decreasing response with higher concentration. 
+We generate N_odour-1 odours randomly with the following properties: 
+1. Each odour has a a Gaussian profile of glomerulus binding (kp1) with sigma drawn from 
+   Gauss(mu_sig,sig_sig). 
+2. The Gaussian odour profile is over a random permutation of the glomeruli.
+3. The overall sensitivity to an odour (amplitude of the Gaussian profile for k1p) is varied by
+   10^eta, where eta is a Gaussian random variable 
+3. The activation kp2 is homogeneous across glomeruli and is given by zeta, an 
+   essentially Gaussian random variable
+We then add one odour, "geosmin", which has high sensitivity, broad profile, but low activation kp2
+Then, all odours are presented at 24 concentrations for 3s each trial, with 3 second pauses.
+The overall strength of inhibition is scaled by a command line argument "ino".
 """
 
 paras= std_paras()
 if len(sys.argv) < 3:
-    print("usage: python exp4.py <run#> <connect_I: hom/corr0/corr1/cov0/cov1")
+    print("usage: python exp4.py <ino> <connect_I: hom/corr0/corr1/cov0/cov1")
     exit()
 
 ino= float(sys.argv[1])
@@ -40,42 +49,27 @@ if not path:
     print("making dir "+paras["dirname"])
     os.makedirs(paras["dirname"])
 
-paras["plotting"]= False
-paras["plotdisplay"]= False
 paras["use_spk_rec"]= True
 
+# Control what to record
 paras["rec_state"]= [
-#    ("ORs", "ra"),
+    ("ORs", "ra"),
 #    ("ORNs", "V"),
 #    ("ORNs", "a"),
 #    ("PNs", "V")
 ]
 
 paras["rec_spikes"]= [
-#    "ORNs",
+    "ORNs",
     "PNs",
 #    "LNs"
     ]
 
-paras["plot_raster"]= [
-#    "ORNs",
-    "PNs",
-#    "LNs"
-    ]
-
-paras["plot_sdf"]= {
-#    "ORNs": range(74,86,2),
-    "PNs": list(range(74,87,2)),
-#    "LNs": list(range(74,87,2))
-    }
-
-label= "test_new"
+label= "run"
 paras["label"]= label+"_"+connect_I+"_"+str(ino)
-
 
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
 # work on receptors tiling the space of possible sigmoid responses
-
 hill_new= True
 
 if hill_new:
@@ -97,9 +91,10 @@ if odor_new:
         while A < paras["min_A"] or A > paras["max_A"]:
             A= np.random.normal(paras["mean_A"], paras["sig_A"])
         od= gauss_odor(paras["n_glo"], 0, sigma, A, paras["odor_clip"], paras["mean_act"], paras["sig_act"],paras["min_act"],paras["max_act"])
-        random.shuffle(od)
+#        for k in range(15):
+        random.shuffle(od[:,0])
         odors.append(np.copy(od))
-    # One "diagnostic odor" that is particularly early binding, broad, and low activating
+    # Add "Geosmin" that is particularly early binding, broad, and low activating
     sigma= 15
     A= paras["max_A"]
     act= 0.01
@@ -107,15 +102,16 @@ if odor_new:
     odors.append(np.copy(od))
     odors= np.array(odors)
     np.save(paras["dirname"]+"/"+label+"_odors",odors)
+    exit(1)
 else:
     odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
     oNo= odors.shape[0]
 
-
-# define the inhibitory connectivity pattern in the antennal lobe either homogeneous (equal strength)
-# for HOM_LN_GSYN= True or according to correlations (corr0 without self-inhibition, corr1 with self-inhibition)
-# or according to covariance (cov0 without self-inhibition, cov1 with self-inhibition)
-HOMO_LN_GSYN= False
+# define the inhibitory connectivity pattern in the antennal lobe either
+# homogeneous (equal strength) signalled by correl == None or according to
+# correlations (corr0 without self-inhibition, corr1 with self-inhibition)
+# or according to covariance (cov0 without self-inhibition, cov1 with
+# self-inhibition)
 if connect_I == "corr0":
     correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
     correl= (correl+1.0)/20.0 # extra factor 10 in comparison to covariance ...
@@ -140,8 +136,7 @@ else:
                 correl= np.maximum(0.0, correl)
                 print("AL inhibition with covariance and self-inhibition")
             else:
-                correl= np.ones((paras["n_glo"],paras["n_glo"]))
-                HOMO_LN_GSYN= True
+                correl= None
                 print("Homogeneous AL inhibition")
                 
 # Now, let's make a protocol where each odor is presented for 3 secs with
@@ -171,11 +166,4 @@ for i in range(paras["N_odour"]):
 paras["t_total"]= t_off
 print("We are running for a total simulated time of {}ms".format(t_off))
 
-if __name__ == "__main__":
-    if HOMO_LN_GSYN:
-        state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras)
-    else:
-        state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras, lns_gsyn= correl)
-
-    if paras["plotting"]:
-        exp1_plots(state_bufs, spike_t, spike_ID, paras, display=plotdisplay)
+state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras, lns_gsyn= correl)
