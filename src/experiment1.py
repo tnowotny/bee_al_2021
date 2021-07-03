@@ -97,6 +97,7 @@ if odor_new:
     A= paras["max_A"]
     act= 0.01
     od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, sigma, A, paras["odor_clip"], act, 0.0, 0.01)
+    random.shuffle(od[:,0])
     odors.append(np.copy(od))
     odors= np.array(odors)
     np.save(paras["dirname"]+"/"+label+"_odors",odors)
