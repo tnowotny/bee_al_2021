@@ -36,8 +36,8 @@ if ino == -100:
     paras["lns_pns_g"]= 0
     paras["lns_lns_g"]= 0
 else:
-    paras["lns_pns_g"]*= np.power(np.sqrt(10),ino)
-    paras["lns_lns_g"]*= np.power(np.sqrt(10),ino)
+    paras["lns_pns_g"]*= np.power(10,ino)
+    paras["lns_lns_g"]*= np.power(10,ino)
 
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
@@ -93,9 +93,9 @@ if odor_new:
         random.shuffle(od[:,0])
         odors.append(np.copy(od))
     # Add "Geosmin" that is particularly early binding, broad, and low activating
-    sigma= 15
+    sigma= 10
     A= paras["max_A"]
-    act= 0.01
+    act= paras["min_act"]
     od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, sigma, A, paras["odor_clip"], act, 0.0, 0.01)
     random.shuffle(od[:,0])
     odors.append(np.copy(od))

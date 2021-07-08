@@ -33,16 +33,16 @@ def std_paras():
     paras["n"]= n
     paras["N"]= N
     paras["N_odour"]= 100
-    paras["mu_sig"]= 5
+    paras["mu_sig"]= 3
     paras["sig_sig"]= 0.5
-    paras["min_sig"]= 3
+    paras["min_sig"]= 1.5
     paras["odor_clip"]= 0.0
     paras["mean_act"]= 0.02
     paras["sig_act"]= 0.01
     paras["min_act"]= 0.01
     paras["max_act"]= 0.05
     paras["mean_A"]= 2.0
-    paras["sig_A"]= 0.5
+    paras["sig_A"]= 0.7
     paras["min_A"]= 0.0
     paras["max_A"]= 4.0
     result = subprocess.run(['git', 'log'], stdout=subprocess.PIPE)
