@@ -20,7 +20,7 @@ We generate N_odour-1 odours randomly with the following properties:
 3. The activation kp2 is homogeneous across glomeruli and is given by zeta, an 
    essentially Gaussian random variable
 We then add one odour, "geosmin", which has high sensitivity, broad profile, but low activation kp2
-Then, all odours are presented at 24 concentrations for 3s each trial, with 3 second pauses.
+Then, all odours are presented at 25 concentrations for 3s each trial, with 3 second pauses.
 The overall strength of inhibition is scaled by a command line argument "ino".
 """
 
@@ -105,46 +105,17 @@ else:
     odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
     oNo= odors.shape[0]
 
-# define the inhibitory connectivity pattern in the antennal lobe either
-# homogeneous (equal strength) signalled by correl == None or according to
-# correlations (corr0 without self-inhibition, corr1 with self-inhibition)
-# or according to covariance (cov0 without self-inhibition, cov1 with
-# self-inhibition)
-if connect_I == "corr0":
-    correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
-    correl= (correl+1.0)/20.0 # extra factor 10 in comparison to covariance ...
-    for i in range(paras["n_glo"]):
-        correl[i,i]= 0.0
-    print("AL inhibition with correlation, no self-inhibition")
-else:
-    if connect_I == "corr1":
-        correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
-        correl= (correl+1.0)/20.0  # extra factor 10 in comparison to covariance ...
-        print("AL inhibition with correlation and self-inhibition")
-    else:
-        if connect_I == "cov0":
-            correl= np.cov(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
-            correl= np.maximum(0.0, correl)
-            for i in range(paras["n_glo"]):
-                correl[i,i]= 0.0
-            print("AL inhibition with covariance, no self-inhibition")
-        else:
-            if connect_I == "cov1":
-                correl= np.cov(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
-                correl= np.maximum(0.0, correl)
-                print("AL inhibition with covariance and self-inhibition")
-            else:
-                correl= None
-                print("Homogeneous AL inhibition")
+# define the inhibitory connectivity pattern in the antennal lobe
+correl= choose_inh_connectivity(paras,connect_I)
                 
 # Now, let's make a protocol where each odor is presented for 3 secs with
-# 3 second breaks and at each of 24 concentration values
+# 3 second breaks and at each of 25 concentration values
 paras["protocol"]= []
 t_off= 3000.0
 base= np.power(10,0.25)
 
 for i in range(paras["N_odour"]):
-    for c in range(24):
+    for c in range(25):
         sub_prot= {
             "t": t_off,
             "odor": i,

@@ -64,42 +64,17 @@ hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
 odors= np.load(paras["dirname"]+"/"+label+"_odors.npy")
 paras["N_odour"]= odors.shape[0]
 
-if connect_I == "corr0":
-    correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
-    correl= (correl+1.0)/20.0 # extra factor 10 in comparison to covariance ...
-    for i in range(paras["n_glo"]):
-        correl[i,i]= 0.0
-    print("AL inhibition with correlation, no self-inhibition")
-else:
-    if connect_I == "corr1":
-        correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
-        correl= (correl+1.0)/20.0 # extra factor 10 in comparison to covariance ...
-        print("AL inhibition with correlation and self-inhibition")
-    else:
-        if connect_I == "cov0":
-            correl= np.cov(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
-            correl= np.maximum(0.0, correl)
-            for i in range(paras["n_glo"]):
-                correl[i,i]= 0.0
-            print("AL inhibition with covariance, no self-inhibition")
-        else:
-             if connect_I == "cov1":
-                 correl= np.cov(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
-                 correl= np.maximum(0.0, correl)
-                 print("AL inhibition with covariance and self-inhibition")
-             else:
-                 correl= None
-                 print("Homogeneous AL inhibition")
-                 
+# define the inhibitory connectivity pattern in the antennal lobe
+correl= choose_inh_connectivity(paras,connect_I)
 
 # Now, let's make a protocol where each odor is presented for 3 secs with
-# 3 second breaks and at each of 24 concentration values
+# 3 second breaks and at each of 25 concentration values
 paras["protocol"]= []
 t_off= 3000.0
 base= np.power(10,0.25)
 
-for c1 in range(24):
-    for c2 in range(24):
+for c1 in range(25):
+    for c2 in range(25):
         sub_prot= {
             "t": t_off,
             "odor": o1,

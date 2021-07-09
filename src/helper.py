@@ -1,6 +1,48 @@
 import numpy as np
 
 """
+Parse the command line argument to create the right initial conditions/connectivity for
+the LN -> PN inhibitory connections. Options are:either
+homogeneous (equal strength) signalled by correl == None or according to
+correlations (corr0 without self-inhibition, corr1 with self-inhibition)
+or according to covariance (cov0 without self-inhibition, cov1 with
+self-inhibition). If neither of these is selected, the connections are homogeneous.
+"""
+
+def choose_inh_connectivity(paras,connect_I):
+    if connect_I == "corr0":
+        correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
+        correl= (correl+1.0)/20.0 # extra factor 10 in comparison to covariance ...
+        for i in range(paras["n_glo"]):
+            correl[i,i]= 0.0
+        print("AL inhibition with correlation, no self-inhibition")
+        return correl
+    else:
+        if connect_I == "corr1":
+            correl= np.corrcoef(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
+            correl= (correl+1.0)/20.0 # extra factor 10 in comparison to covariance ...
+            print("AL inhibition with correlation and self-inhibition")
+            return correl
+        else:
+            if connect_I == "cov0":
+                correl= np.cov(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
+                correl= np.maximum(0.0, correl)
+                for i in range(paras["n_glo"]):
+                    correl[i,i]= 0.0
+                print("AL inhibition with covariance, no self-inhibition")
+                return correl
+            else:
+                if connect_I == "cov1":
+                    correl= np.cov(odors[:,:,0].reshape(paras["N_odour"],paras["n_glo"]),rowvar=False)
+                    correl= np.maximum(0.0, correl)
+                    print("AL inhibition with covariance and self-inhibition")
+                    return correl
+                else:
+                    print("Homogeneous AL inhibition")
+                    return None
+
+
+"""
 calculate SDFs from spike times. The returned SDF has time along axis 0
 and neuron id along axis 1
 """
