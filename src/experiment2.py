@@ -50,7 +50,7 @@ paras["rec_state"]= [
 ]
 
 paras["rec_spikes"]= [
-#    "ORNs",
+    "ORNs",
     "PNs",
 #    "LNs"
     ]

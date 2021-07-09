@@ -155,8 +155,11 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
     spike_t= dict()
     spike_ID= dict()
     for pop in paras["rec_spikes"]:
-        spike_t[pop]= []
-        spike_ID[pop]= []
+        if pop == "ORNs":
+            ORN_cnts= []
+        else:
+            spike_t[pop]= []
+            spike_ID[pop]= []
     
     # Simulate
     prot_pos= 0
@@ -168,7 +171,7 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
             model.push_state_to_device("ORs")
             prot_pos+= 1
         model.step_time()
-        if int(model.t/model.dT)%1000 == 0:
+        if int_t%1000 == 0:
             print(model.t)
 
         int_t+= 1
@@ -185,17 +188,25 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
                 model.pull_recording_buffers_from_device()
                 for pop in paras["rec_spikes"]:
                     the_pop= model.neuron_populations[pop]
-                    spike_t[pop].append(the_pop.spike_recording_data[0])
-                    spike_ID[pop].append(the_pop.spike_recording_data[1])
+                    if pop == "ORNs":
+                        # only record total spike number
+                        ORN_cnts.append(len(the_pop.spike_recording_data[0]))
+                    else:
+                        spike_t[pop].append(the_pop.spike_recording_data[0])
+                        spike_ID[pop].append(the_pop.spike_recording_data[1])
                 print("fetched spikes from buffer ... complete")
         else:
             for pop in paras["rec_spikes"]:
                 the_pop= model.neuron_populations[pop]
                 the_pop.pull_current_spikes_from_device()
-                if (the_pop.spike_count[0] > 0):
-                    ln= the_pop.spike_count[0]
-                    spike_t[pop].append(np.copy(model.t*np.ones(ln))) 
-                    spike_ID[pop].append(np.copy(the_pop.spikes[0:ln]))
+                if pop == "ORNs":
+                    # only record total spike number
+                    ORN_cnts.append(the_pop.spike_count[0])
+                else:
+                    if (the_pop.spike_count[0] > 0):
+                        ln= the_pop.spike_count[0]
+                        spike_t[pop].append(np.copy(model.t*np.ones(ln))) 
+                        spike_ID[pop].append(np.copy(the_pop.spikes[0:ln]))
 
     # Saving results
     if state_bufs:
@@ -207,10 +218,14 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
             np.save(dirname+paras["label"]+"_"+p, state_bufs[p])
 
     for pop in paras["rec_spikes"]:
-        spike_t[pop]= np.hstack(spike_t[pop])
-        np.save(dirname+paras["label"]+"_"+pop+"_spike_t", spike_t[pop])
-        spike_ID[pop]= np.hstack(spike_ID[pop])
-        np.save(dirname+paras["label"]+"_"+pop+"_spike_ID", spike_ID[pop])
+        if pop == "ORNs":
+            ORN_cnts= np.hstack(ORN_cnts)
+            np.save(dirname+paras["label"]+"_"+pop+"_spike_counts",ORN_cnts)
+        else:
+            spike_t[pop]= np.hstack(spike_t[pop])
+            np.save(dirname+paras["label"]+"_"+pop+"_spike_t", spike_t[pop])
+            spike_ID[pop]= np.hstack(spike_ID[pop])
+            np.save(dirname+paras["label"]+"_"+pop+"_spike_ID", spike_ID[pop])
 
     return state_bufs, spike_t, spike_ID
 
