@@ -227,5 +227,5 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
             spike_ID[pop]= np.hstack(spike_ID[pop])
             np.save(dirname+paras["label"]+"_"+pop+"_spike_ID", spike_ID[pop])
 
-    return state_bufs, spike_t, spike_ID
+    return state_bufs, spike_t, spike_ID, ORN_cnts
 
