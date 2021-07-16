@@ -10,6 +10,7 @@ from OR import or_model
 from synapse import pass_or, pass_postsyn, ors_orns_connect, orns_al_connect, pns_lns_connect, lns_pns_conn_init, lns_lns_conn_init
 from neuron import adaptive_LIF
 from helper import set_odor_simple
+import sim
 
 def ALsim(odors, hill_exp, paras, lns_gsyn= None):
     path = os.path.isdir(paras["dirname"])
@@ -28,7 +29,7 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
     )
 
     # Set simulation timestep to 0.1ms
-    model.dT = paras["dt"]
+    model.dT = sim.dt
     
     # Add neuron populations to model
     ors = model.add_neuron_population("ORs", paras["n_glo"], or_model, paras["or_params"], paras["or_ini"])
