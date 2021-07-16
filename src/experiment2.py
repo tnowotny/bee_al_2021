@@ -23,6 +23,7 @@ o1= int(sys.argv[3])
 o2= int(sys.argv[4])
 
 paras= std_paras()
+paras["write_to_disk"]= True
 
 if ino == -100:
     paras["lns_pns_g"]= 0

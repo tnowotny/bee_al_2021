@@ -209,23 +209,24 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
                         spike_ID[pop].append(np.copy(the_pop.spikes[0:ln]))
 
     # Saving results
-    if state_bufs:
-        # only save the time array if anything is being saved
-        t_array= np.arange(0.0,paras["t_total"],model.dT)
-        np.save(dirname+paras["label"]+"_t", t_array)
-        for p in state_bufs:
-            state_bufs[p]= np.vstack(state_bufs[p])
-            np.save(dirname+paras["label"]+"_"+p, state_bufs[p])
+    if paras["write_to_disk"]:
+        if state_bufs:
+            # only save the time array if anything is being saved
+            t_array= np.arange(0.0,paras["t_total"],model.dT)
+            np.save(dirname+paras["label"]+"_t", t_array)
+            for p in state_bufs:
+                state_bufs[p]= np.vstack(state_bufs[p])
+                np.save(dirname+paras["label"]+"_"+p, state_bufs[p])
 
-    for pop in paras["rec_spikes"]:
-        if pop == "ORNs":
-            ORN_cnts= np.hstack(ORN_cnts)
-            np.save(dirname+paras["label"]+"_"+pop+"_spike_counts",ORN_cnts)
-        else:
-            spike_t[pop]= np.hstack(spike_t[pop])
-            np.save(dirname+paras["label"]+"_"+pop+"_spike_t", spike_t[pop])
-            spike_ID[pop]= np.hstack(spike_ID[pop])
-            np.save(dirname+paras["label"]+"_"+pop+"_spike_ID", spike_ID[pop])
+        for pop in paras["rec_spikes"]:
+            if pop == "ORNs":
+                ORN_cnts= np.hstack(ORN_cnts)
+                np.save(dirname+paras["label"]+"_"+pop+"_spike_counts",ORN_cnts)
+            else:
+                spike_t[pop]= np.hstack(spike_t[pop])
+                np.save(dirname+paras["label"]+"_"+pop+"_spike_t", spike_t[pop])
+                spike_ID[pop]= np.hstack(spike_ID[pop])
+                np.save(dirname+paras["label"]+"_"+pop+"_spike_ID", spike_ID[pop])
 
     return state_bufs, spike_t, spike_ID, ORN_cnts
 
