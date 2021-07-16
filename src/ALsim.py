@@ -15,7 +15,7 @@ import sim
 def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
     path = os.path.isdir(paras["dirname"])
     if not path:
-        print("making dir "+paras["dirname"])
+        #print("making dir "+paras["dirname"])
         os.makedirs(paras["dirname"])
     dirname=paras["dirname"]+"/"
 
@@ -95,14 +95,14 @@ def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
                                                 "StaticPulse", {}, {"g": the_lns_gsyn}, {}, {},
                                                 "ExpCond", paras["lns_pns_post_params"], {}
                                                 )
-            print("Set explicit LN -> PN inhibition matrix")
+            #print("Set explicit LN -> PN inhibition matrix")
         else:
             lns_pns =  model.add_synapse_population("LNs_PNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
                                                 lns, pns,
                                                 "StaticPulse", {}, {"g": init_var(lns_pns_conn_init, {"n_pn": paras["n"]["PNs"],"n_ln": paras["n"]["LNs"],"g": paras["lns_pns_g"]})}, {}, {},
                                                 "ExpCond", paras["lns_pns_post_params"], {}
                                                 )
-            print("Set homogeneous LN -> PN inhibition matrix using initvar snippet")
+            #print("Set homogeneous LN -> PN inhibition matrix using initvar snippet")
     # Connect LNs to LNs
     if paras["n"]["LNs"] > 0:
         if lns_gsyn is not None:
@@ -115,17 +115,17 @@ def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
                                                 "StaticPulse", {}, {"g": the_lns_gsyn}, {}, {},
                                                 "ExpCond", paras["lns_lns_post_params"], {}
                                                 )
-            print("Set explicit LN -> LN inhibition matrix")
+            #print("Set explicit LN -> LN inhibition matrix")
         else:
             lns_lns =  model.add_synapse_population("LNs_LNs", "DENSE_INDIVIDUALG", genn_wrapper.NO_DELAY,
                                                 lns, lns,
                                                 "StaticPulse", {}, {"g": init_var(lns_lns_conn_init,{"n_ln": paras["n"]["LNs"],"g": paras["lns_lns_g"]})}, {}, {},
                                                 "ExpCond", paras["lns_lns_post_params"], {}
                                                 )
-            print("Set homogeneous LN -> LN inhibition matrix using initvar snippet")
-    print("building model ...");
+            #print("Set homogeneous LN -> LN inhibition matrix using initvar snippet")
+    #print("building model ...");
     # Build and load model
-    model.build()
+    #model.build()
     model.load(num_recording_timesteps= paras["spk_rec_steps"])
     
     # Prepare variables for recording results
@@ -155,8 +155,9 @@ def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
             model.push_state_to_device("ORs")
             prot_pos+= 1
         model.step_time()
-        if int_t%1000 == 0:
-            print(model.t)
+        if paras["progress_disply"]:
+            if int_t%1000 == 0:
+                print(model.t)
 
         int_t+= 1
         # for pop in state_pops:
@@ -178,12 +179,12 @@ def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
                     else:
                         spike_t[pop].append(the_pop.spike_recording_data[0])
                         spike_ID[pop].append(the_pop.spike_recording_data[1])
-                print("fetched spikes from buffer ... complete")
+                #print("fetched spikes from buffer ... complete")
         else:
             for pop in paras["rec_spikes"]:
                 the_pop= model.neuron_populations[pop]
                 the_pop.pull_current_spikes_from_device()
-                if pop == "ORNs":
+                if pop == "OR<Ns":
                     # only record total spike number
                     ORN_cnts.append(the_pop.spike_count[0])
                 else:
@@ -192,25 +193,32 @@ def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
                         spike_t[pop].append(np.copy(model.t*np.ones(ln))) 
                         spike_ID[pop].append(np.copy(the_pop.spikes[0:ln]))
 
-    # Saving results
-    if paras["write_to_disk"]:
+    if state_bufs:
+        # only save the time array if anything is being saved
+        for p in state_bufs:
+            state_bufs[p]= np.vstack(state_bufs[p])
+
+    for pop in paras["rec_spikes"]:
+        if pop == "ORNs":
+            ORN_cnts= np.hstack(ORN_cnts)
+        else:
+            spike_t[pop]= np.hstack(spike_t[pop])
+            spike_ID[pop]= np.hstack(spike_ID[pop])
+            
+    if paras["write_to_disk"]:            # Saving results
         if state_bufs:
             # only save the time array if anything is being saved
             t_array= np.arange(0.0,paras["t_total"],model.dT)
             np.save(dirname+paras["label"]+"_t", t_array)
             for p in state_bufs:
-                state_bufs[p]= np.vstack(state_bufs[p])
                 np.save(dirname+paras["label"]+"_"+p, state_bufs[p])
 
         for pop in paras["rec_spikes"]:
             if pop == "ORNs":
-                ORN_cnts= np.hstack(ORN_cnts)
                 np.save(dirname+paras["label"]+"_"+pop+"_spike_counts",ORN_cnts)
             else:
-                spike_t[pop]= np.hstack(spike_t[pop])
                 np.save(dirname+paras["label"]+"_"+pop+"_spike_t", spike_t[pop])
-                spike_ID[pop]= np.hstack(spike_ID[pop])
                 np.save(dirname+paras["label"]+"_"+pop+"_spike_ID", spike_ID[pop])
-
+    
     return state_bufs, spike_t, spike_ID, ORN_cnts
 
