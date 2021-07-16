@@ -12,7 +12,7 @@ from neuron import adaptive_LIF
 from helper import set_odor_simple
 import sim
 
-def ALsim(odors, hill_exp, paras, lns_gsyn= None):
+def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
     path = os.path.isdir(paras["dirname"])
     if not path:
         print("making dir "+paras["dirname"])
@@ -139,10 +139,9 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
 
     spike_t= dict()
     spike_ID= dict()
+    ORN_cnts= []
     for pop in paras["rec_spikes"]:
-        if pop == "ORNs":
-            ORN_cnts= []
-        else:
+        if pop != "ORNs":
             spike_t[pop]= []
             spike_ID[pop]= []
     
@@ -150,8 +149,8 @@ def ALsim(odors, hill_exp, paras, lns_gsyn= None):
     prot_pos= 0
     int_t= 0
     while model.t < paras["t_total"]:
-        while prot_pos < len(paras["protocol"]) and model.t >= paras["protocol"][prot_pos]["t"]:
-            tp= paras["protocol"][prot_pos]
+        while prot_pos < len(protocol) and model.t >= protocol[prot_pos]["t"]:
+            tp= protocol[prot_pos]
             set_odor_simple(ors, tp["ochn"], odors[tp["odor"],:,:], tp["concentration"], hill_exp)
             model.push_state_to_device("ORs")
             prot_pos+= 1
