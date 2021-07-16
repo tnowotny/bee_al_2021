@@ -11,22 +11,6 @@ from synapse import pass_or, pass_postsyn, ors_orns_connect, orns_al_connect, pn
 from neuron import adaptive_LIF
 from helper import set_odor_simple
 
-spk_rec_steps= 10000
-
-n_glo= 160
-n= {
-    "ORNs": 60,
-    "PNs": 5,
-    "LNs": 25
-    }
-
-N= {
-    "ORNs": n_glo*n["ORNs"],
-    "PNs": n_glo*n["PNs"],
-    "LNs": n_glo*n["LNs"]
-}
-
-
 def ALsim(odors, hill_exp, paras, lns_gsyn= None):
     path = os.path.isdir(paras["dirname"])
     if not path:
