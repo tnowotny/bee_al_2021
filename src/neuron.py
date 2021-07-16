@@ -28,7 +28,7 @@ orn_params = {"C_mem": 1.0,
               "g_adapt": 0.005,
               "V_adapt": -70.0,
               "tau_adapt": 1000.0,
-              "noise_A": 2.1/np.sqrt(sim.dt)
+              "noise_A": 0.7/np.sqrt(sim.dt)
               }
 
 orn_ini = {"V": -60.0,
@@ -53,7 +53,7 @@ pn_ini = {"V": -60.0,
           }
 
 
-ln_params = {"C_mem": 2.0,
+ln_params = {"C_mem": 1.0,
              "V_reset": -70.0,
              "V_thresh": -40.0,
              "V_leak": -60.0,

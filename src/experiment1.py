@@ -25,6 +25,7 @@ The overall strength of inhibition is scaled by a command line argument "ino".
 """
 
 paras= std_paras()
+paras["geoshift"]= 38
 if len(sys.argv) < 3:
     print("usage: python experiment1.py <ino> <connect_I: hom/corr0/corr1/cov0/cov1")
     exit()
@@ -72,17 +73,18 @@ paras["label"]= label+"_"+connect_I+"_"+str(ino)
 hill_new= True
 
 if hill_new:
-    hill_exp= np.random.uniform(0.7, 0.8, paras["n_glo"])
+    hill_exp= np.random.uniform(0.95, 1.05, paras["n_glo"])
     np.save(paras["dirname"]+"/"+label+"_hill",hill_exp)
 else:
     hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
 
 # Generate odors or load previously generated odors from file
 odor_new= True
+paras["N_odour"]= 2
 
 if odor_new:
     odors= []
-    for i in range(paras["N_odour"]-1):
+    for i in range(paras["N_odour"]-2):
         sigma= 0
         while sigma < paras["min_sig"]:
             sigma= np.random.normal(paras["mu_sig"],paras["sig_sig"])
@@ -92,12 +94,22 @@ if odor_new:
         od= gauss_odor(paras["n_glo"], 0, sigma, A, paras["odor_clip"], paras["mean_act"], paras["sig_act"],paras["min_act"],paras["max_act"])
         random.shuffle(od[:,0])
         odors.append(np.copy(od))
+    # create a permutation that will be applied to both IAA and geosmin
+    the_shuffle= np.arange(paras["n_glo"])
+    random.shuffle(the_shuffle)
+    # Add a "IAA" odour that matches EAG recordings ... use same glo as for "Geosmin"
+    sigma= 5
+    A= paras["max_A"]/200.0
+    act= paras["max_act"]*2
+    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, sigma, A, paras["odor_clip"], act, 0.0, 1e-10, 0.1)
+    od[:,0]= od[the_shuffle,0]
+    odors.append(np.copy(od))
     # Add "Geosmin" that is particularly early binding, broad, and low activating
     sigma= 10
-    A= paras["max_A"]
-    act= paras["min_act"]
-    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, sigma, A, paras["odor_clip"], act, 0.0, 0.01)
-    random.shuffle(od[:,0])
+    A= paras["max_A"]+1
+    act= paras["min_act"]/3.0
+    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2+paras["geoshift"], sigma, A, paras["odor_clip"], act, 0.0, 1e-10, 0.1)
+    od[:,0]=od[the_shuffle,0]
     odors.append(np.copy(od))
     odors= np.array(odors)
     np.save(paras["dirname"]+"/"+label+"_odors",odors)

@@ -50,7 +50,7 @@ n_orn_pn= 12
 Initial values for the ORN to PN synapse
 """
 orns_pns_ini = {
-    "g": 0.2/n_orn_pn     # weight in (muS?)     
+    "g": 0.6/n_orn_pn     # weight in (muS?)     
     }
 
 
@@ -91,7 +91,7 @@ n_orn_ln= 12
 Parameter values for the ORN to LN synapse
 """
 orns_lns_ini = {
-    "g": 0.1/n_orn_ln     # weight in (muS?)
+    "g": 0.3/n_orn_ln     # weight in (muS?)
     }
 
 
