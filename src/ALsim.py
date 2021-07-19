@@ -125,7 +125,7 @@ def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
             #print("Set homogeneous LN -> LN inhibition matrix using initvar snippet")
     #print("building model ...");
     # Build and load model
-    #model.build()
+    model.build()
     model.load(num_recording_timesteps= paras["spk_rec_steps"])
     
     # Prepare variables for recording results
@@ -155,7 +155,7 @@ def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
             model.push_state_to_device("ORs")
             prot_pos+= 1
         model.step_time()
-        if paras["progress_disply"]:
+        if paras["progress_display"]:
             if int_t%1000 == 0:
                 print(model.t)
 

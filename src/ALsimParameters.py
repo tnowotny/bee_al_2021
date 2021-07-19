@@ -48,4 +48,5 @@ def std_paras():
     paras["max_A"]= 4.0
     result = subprocess.run(['git', 'log'], stdout=subprocess.PIPE)
     paras["git_version"]= result.stdout.decode('utf-8').split("\n")[0]
+    paras["progress_display"]= True
     return paras

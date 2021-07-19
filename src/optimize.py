@@ -34,7 +34,7 @@ if not path:
     os.makedirs(paras["dirname"])
 
 paras["use_spk_rec"]= True
-paras["progress_disply"]= False
+paras["progress_display"]= False
 
 # Control what to record
 paras["rec_state"]= [
@@ -128,10 +128,10 @@ x0= np.array([
     paras["lns_lns_g"],            # 4
     paras["IAA_sigma"],            # 5
     paras["IAA_A"],                # 6
-    paras["IAA_act"],              # 7
+#    paras["IAA_act"],              # 7
     paras["geo_sigma"],            # 8
     paras["geo_A"],                # 9
-    paras["geo_act"],              # 10
+#    paras["geo_act"],              # 10
     paras["geo_shift"]             # 11
     ])
     
@@ -143,10 +143,10 @@ bounds= [
     (0.0, 1.0),
     (2.0, 6.0),
     (-3, 5),
-    (0.01, 10.0),
-    (2.0, 11.0),
+#    (0.01, 0.1),
+    (5.0, 11.0),
     (-3, 5),
-    (1e-5, 10.0),
+#    (1e-5, 0.1),
     (0.0, 80)
     ]
 
@@ -154,10 +154,10 @@ def evaluate(x, *args) -> float:
     assert len(args) == 3
     paras= args[1]
     odors= []
-    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, x[5], x[6], paras["odor_clip"], x[7], 0.0, 1e-10, 0.1)
+    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, x[5], x[6], paras["odor_clip"], paras["IAA_act"], 0.0, 1e-10, 0.1)
     odors.append(np.copy(od))
     # Add "Geosmin" that is particularly early binding, broad, and low activating
-    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2+x[11], x[8], x[9], paras["odor_clip"], x[10], 0.0, 1e-10, 0.1)
+    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2+x[9], x[7], x[8], paras["odor_clip"], paras["geo_act"], 0.0, 1e-10, 0.1)
     odors.append(np.copy(od))
     odors= np.array(odors)
     paras["orns_pns_ini"]["g"]= x[0]
@@ -218,21 +218,24 @@ def evaluate(x, *args) -> float:
             sno[cnt]= ri-li
         cnt+= 1
 
-    err.append(np.maximum(1000-sno[0],0))
+    err.append(np.maximum(1000-sno[0],0)) # at least 1000 spikes for IAA at 10^-6
     err.append(sno[1])
+    err.append(np.maximum(2000-sno[3],0)) # at least 3000 spikes for IAA at 10^-1
     err.append(np.maximum(sno[2]-sno[3],0))
     err.append(sno[4])
-    print(err)
+    with open("progress.txt","a") as f:
+        f.write("x is {}\n".format(x))
+        f.write(" and err is {}.\n".format(err))
+        f.close()
     wght= np.array([
         1.0,
-        0.1,
-        0.1,
+        0.05,
+        0.05,
         0.01,
-        0.1
+        0.02,
+        0.05
         ])
     return np.dot(err,wght)
 
-print(x0)
-print(bounds)
 #print(evaluate(x0,hill_exp,paras,correl))
-opt.minimize(evaluate, x0, args=(hill_exp,paras,correl), method="Nelder-Mead", bounds= bounds, options={"maxiter": 10, "disp": True})
+opt.minimize(evaluate, x0, args=(hill_exp,paras,correl), method="Nelder-Mead", bounds= bounds, options={"maxiter": 1000, "disp": True})
