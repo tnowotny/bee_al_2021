@@ -9,6 +9,7 @@ import os
 from ALsimParameters import std_paras
 import random
 import scipy.optimize as opt
+import genome
 
 """
 Run an optimization method to align the AL simulation with experimental observations
@@ -67,14 +68,6 @@ else:
 odor_new= True
 paras["N_odour"]= 2
 
-paras["IAA_sigma"]= 5
-paras["IAA_A"]= paras["max_A"]-3
-paras["IAA_act"]= paras["max_act"]*2
-paras["geo_sigma"]= 10
-paras["geo_A"]= paras["max_A"]+1.0
-paras["geo_act"]= paras["min_act"]/3.0
-paras["geo_shift"]= 38
-
 # define the inhibitory connectivity pattern in the antennal lobe
 correl= choose_inh_connectivity(paras,connect_I)
                 
@@ -93,13 +86,6 @@ for c1 in [ 0, 1e-3, 1e-1 ]:
                 "concentration": c1
             }
             protocol.append(sub_prot)
-            sub_prot= {
-                "t": t_off+3000.0,
-                "odor": 0,
-                "ochn": "0",
-                "concentration": 0.0
-            }
-            protocol.append(sub_prot)
         if c2 != 0:
             sub_prot= {
                 "t": t_off,
@@ -108,6 +94,15 @@ for c1 in [ 0, 1e-3, 1e-1 ]:
                 "concentration": c2
             }
             protocol.append(sub_prot)
+        if c1 != 0:
+            sub_prot= {
+                "t": t_off+3000.0,
+                "odor": 0,
+                "ochn": "0",
+                "concentration": 0.0
+            }
+            protocol.append(sub_prot)
+        if c2 != 0:
             sub_prot= {
                 "t": t_off+3000.0,
                 "odor": 1,
@@ -120,51 +115,32 @@ for c1 in [ 0, 1e-3, 1e-1 ]:
 paras["t_total"]= t_off
 print("We are running for a total simulated time of {}ms".format(t_off))
 
-x0= np.array([
-    paras["orns_pns_ini"]["g"],    # 0
-    paras["orns_lns_ini"]["g"],    # 1
-    paras["pns_lns_ini"]["g"],     # 2
-    paras["lns_pns_g"],            # 3
-    paras["lns_lns_g"],            # 4
-    paras["IAA_sigma"],            # 5
-    paras["IAA_A"],                # 6
-#    paras["IAA_act"],              # 7
-    paras["geo_sigma"],            # 8
-    paras["geo_A"],                # 9
-#    paras["geo_act"],              # 10
-    paras["geo_shift"]             # 11
-    ])
-    
+x0= get_x(paras)
+
 bounds= [
-    (0.0, 1.0),
-    (0.0, 1.0),
-    (0.0, 1.0),
-    (0.0, 1.0),
-    (0.0, 1.0),
+    (-5.0, 1.0),
+    (-5.0, 1.0),
+    (-5.0, 1.0),
+    (-5.0, 1.0),
+    (-5.0, 1.0),
     (2.0, 6.0),
     (-3, 5),
-#    (0.01, 0.1),
     (5.0, 11.0),
     (-3, 5),
-#    (1e-5, 0.1),
     (0.0, 80)
-    ]
+]
 
 def evaluate(x, *args) -> float:
     assert len(args) == 3
     paras= args[1]
     odors= []
+    paras= set_x(paras,x)
     od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, x[5], x[6], paras["odor_clip"], paras["IAA_act"], 0.0, 1e-10, 0.1)
     odors.append(np.copy(od))
     # Add "Geosmin" that is particularly early binding, broad, and low activating
     od= gauss_odor(paras["n_glo"], paras["n_glo"]//2+x[9], x[7], x[8], paras["odor_clip"], paras["geo_act"], 0.0, 1e-10, 0.1)
     odors.append(np.copy(od))
     odors= np.array(odors)
-    paras["orns_pns_ini"]["g"]= x[0]
-    paras["orns_lns_ini"]["g"]= x[1]
-    paras["pns_lns_ini"]["g"]= x[2]
-    paras["lns_pns_g"]= x[3]
-    paras["lns_lns_g"]= x[4]
    
     state_bufs, spike_t, spike_ID, ORN_cnts= ALsim(odors, args[0], paras, protocol, lns_gsyn= args[2])
     err= []
@@ -218,24 +194,27 @@ def evaluate(x, *args) -> float:
             sno[cnt]= ri-li
         cnt+= 1
 
-    err.append(np.maximum(1000-sno[0],0)) # at least 1000 spikes for IAA at 10^-6
-    err.append(sno[1])
-    err.append(np.maximum(2000-sno[3],0)) # at least 3000 spikes for IAA at 10^-1
-    err.append(np.maximum(sno[2]-sno[3],0))
-    err.append(sno[4])
+    err.append((np.maximum(1000-sno[0],0)/1000)) # at least 1000 spikes for IAA at 10^-6
+    err.append(sno[1]/1000)
+    err.append(np.maximum(3000-sno[3],0)/3000) # at least 3000 spikes for IAA at 10^-1
+    the_err= np.maximum(sno[2]-sno[3],0)
+    if sno[2]+sno[3] > 0:
+        the_err/= sno[2]+sno[3]
+    err.append(the_err)
+    err.append(sno[4]/1000)
     with open("progress.txt","a") as f:
         f.write("x is {}\n".format(x))
         f.write(" and err is {}.\n".format(err))
         f.close()
     wght= np.array([
+        0.5,
+        3.0,
         1.0,
-        0.05,
-        0.05,
-        0.01,
-        0.02,
-        0.05
-        ])
+        3.0,
+        1.0,
+        0.2
+    ])
     return np.dot(err,wght)
 
 #print(evaluate(x0,hill_exp,paras,correl))
-opt.minimize(evaluate, x0, args=(hill_exp,paras,correl), method="Nelder-Mead", bounds= bounds, options={"maxiter": 1000, "disp": True})
+opt.minimize(evaluate, x0, args=(hill_exp,paras,correl), method="Nelder-Mead", bounds= bounds, options={"maxiter": 10000, "disp": True})

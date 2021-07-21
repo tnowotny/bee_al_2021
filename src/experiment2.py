@@ -29,8 +29,8 @@ if ino == -100:
     paras["lns_pns_g"]= 0
     paras["lns_lns_g"]= 0
 else:
-    paras["lns_pns_g"]*= np.power(np.sqrt(10),ino)
-    paras["lns_lns_g"]*= np.power(np.sqrt(10),ino)
+    paras["lns_pns_g"]*= np.power(10,ino)
+    paras["lns_lns_g"]*= np.power(10,ino)
 
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")

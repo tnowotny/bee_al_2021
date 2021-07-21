@@ -50,7 +50,7 @@ n_orn_pn= 12
 Initial values for the ORN to PN synapse
 """
 orns_pns_ini = {
-    "g": 0.6/n_orn_pn     # weight in (muS?)     
+    "g": 0.008    # weight in (muS)     
     }
 
 
@@ -91,7 +91,7 @@ n_orn_ln= 12
 Parameter values for the ORN to LN synapse
 """
 orns_lns_ini = {
-    "g": 0.3/n_orn_ln     # weight in (muS?)
+    "g": 0.008     # weight in (muS?)
     }
 
 
@@ -158,7 +158,7 @@ lns_pns_conn_init = create_custom_init_var_snippet_class(
 """
 Parameter values for the LN to PN synapse
 """
-lns_pns_g= 0.00008
+lns_pns_g= 5.5e-5
 
 """
 Parameter values for the LN to PN post-synapse
@@ -166,7 +166,7 @@ Parameter values for the LN to PN post-synapse
 lns_pns_post_params = {
     "tau": 20.0,     # decay timescale in (ms)
     "E": -80.0       # reversal potential in (mV)
-    }
+}
 
 """
 init var snippet for initializing dense LN to PN connections
@@ -181,11 +181,10 @@ lns_lns_conn_init = create_custom_init_var_snippet_class(
     """
 )
 
-
 """
 Parameter values for the LN to LN synapse
 """
-lns_lns_g= 0.0 #0.00003
+lns_lns_g= 2.0e-5
 
 
 """
@@ -194,5 +193,4 @@ Parameter values for the LN to LN post-synapse
 lns_lns_post_params = {
     "tau": 20.0,     # decay timescale in (ms)
     "E": -80.0       # reversal potential in (mV)
-    }
-
+}

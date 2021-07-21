@@ -114,8 +114,6 @@ def gauss_odor(n_glo: int, m: float, sig: float, A: float = 1.0, clip: float = 0
     d= np.minimum(np.abs(d),np.abs(d+n_glo))
     d= np.minimum(np.abs(d),np.abs(d-n_glo))
     od= np.exp(-np.power(d,2)/(2*np.power(sig,2)))
-    #od= np.exp(-np.abs(d/sig))
-    #od= np.exp(-np.power(np.abs(d/sig),3))
     od*= np.power(10,A)
     od= np.maximum(od-clip, 0)
     od[od > 0]= od[od > 0]+clip    

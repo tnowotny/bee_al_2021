@@ -24,8 +24,8 @@ def std_paras():
     paras["pns_lns_post_params"]= pns_lns_post_params
     paras["lns_pns_g"]= lns_pns_g 
     paras["lns_pns_post_params"]= lns_pns_post_params
-    paras["lns_lns_g"]= lns_lns_g
-    paras["lns_lns_post_params"]= lns_lns_post_params
+    paras["lns_lns_g"]= lns_lns_g 
+    paras["lns_lns_post_params"]= lns_lns_post_params    
     paras["spk_rec_steps"]= 10000
     paras["n_glo"]= 160
     paras["n"]=  {
@@ -39,14 +39,22 @@ def std_paras():
     paras["min_sig"]= 1.5
     paras["odor_clip"]= 0.0
     paras["mean_act"]= 0.02
-    paras["sig_act"]= 0.01
-    paras["min_act"]= 0.01
-    paras["max_act"]= 0.05
-    paras["mean_A"]= 2.0
-    paras["sig_A"]= 0.7
+    paras["sig_act"]= 0.02
+    paras["min_act"]= 0.0028
+    paras["max_act"]= 0.2
+    paras["mean_A"]= 1.5
+    paras["sig_A"]= 0.5
     paras["min_A"]= 0.0
     paras["max_A"]= 4.0
+    paras["IAA_sigma"]= 5
+    paras["IAA_A"]= 0.8
+    paras["IAA_act"]= 0.1
+    paras["geo_sigma"]= 10
+    paras["geo_A"]= 4.4
+    paras["geo_act"]= 0.0028
+    paras["geo_shift"]= 34
     result = subprocess.run(['git', 'log'], stdout=subprocess.PIPE)
     paras["git_version"]= result.stdout.decode('utf-8').split("\n")[0]
     paras["progress_display"]= True
+    paras["print_messages"]= True
     return paras

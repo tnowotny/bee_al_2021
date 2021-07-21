@@ -40,7 +40,7 @@ if ino == -100:
 else:
     paras["lns_pns_g"]*= np.power(10,ino)
     paras["lns_lns_g"]*= np.power(10,ino)
-
+    
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
 paras["dirname"]= timestr+"-runs"
@@ -81,10 +81,22 @@ else:
 
 # Generate odors or load previously generated odors from file
 odor_new= True
-paras["N_odour"]= 2
+paras["N_odour"]= 100
 
 if odor_new:
     odors= []
+    # create a permutation that will be applied to both IAA and geosmin
+    the_shuffle= np.arange(paras["n_glo"])
+    random.shuffle(the_shuffle)
+    # Add a "IAA" odour 
+    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, paras["IAA_sigma"], paras["IAA_A"], paras["odor_clip"], paras["IAA_act"], 0.0, 1e-10, 1.0)
+    od[:,0]= od[the_shuffle,0]
+    odors.append(np.copy(od))
+    # Add "Geosmin" that is particularly early binding, broad, and low activating
+    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2+paras["geo_shift"], paras["geo_sigma"], paras["geo_A"], paras["odor_clip"], paras["geo_act"], 0.0, 1e-10, 1.0)
+    od[:,0]= od[the_shuffle,0]
+    odors.append(np.copy(od))
+    # add any remaining random odours
     for i in range(paras["N_odour"]-2):
         sigma= 0
         while sigma < paras["min_sig"]:
@@ -95,23 +107,6 @@ if odor_new:
         od= gauss_odor(paras["n_glo"], 0, sigma, A, paras["odor_clip"], paras["mean_act"], paras["sig_act"],paras["min_act"],paras["max_act"])
         random.shuffle(od[:,0])
         odors.append(np.copy(od))
-    # create a permutation that will be applied to both IAA and geosmin
-    the_shuffle= np.arange(paras["n_glo"])
-    random.shuffle(the_shuffle)
-    # Add a "IAA" odour that matches EAG recordings ... use same glo as for "Geosmin"
-    sigma= 5
-    A= paras["max_A"]/200.0
-    act= paras["max_act"]*2
-    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, sigma, A, paras["odor_clip"], act, 0.0, 1e-10, 0.1)
-    od[:,0]= od[the_shuffle,0]
-    odors.append(np.copy(od))
-    # Add "Geosmin" that is particularly early binding, broad, and low activating
-    sigma= 10
-    A= paras["max_A"]+1
-    act= paras["min_act"]/3.0
-    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2+paras["geoshift"], sigma, A, paras["odor_clip"], act, 0.0, 1e-10, 0.1)
-    od[:,0]=od[the_shuffle,0]
-    odors.append(np.copy(od))
     odors= np.array(odors)
     np.save(paras["dirname"]+"/"+label+"_odors",odors)
 else:
