@@ -24,6 +24,7 @@ o2= int(sys.argv[4])
 
 paras= std_paras()
 paras["write_to_disk"]= True
+paras["trial_time"]= 12000.0
 
 if ino == -100:
     paras["lns_pns_g"]= 0
@@ -104,7 +105,7 @@ for c1 in range(25):
             "concentration": 0.0,
         }
         protocol.append(sub_prot)
-        t_off+= 6000.0;
+        t_off+= paras["trial_time"];
 
 paras["t_total"]= t_off
 print("We are running for a total simulated time of {}ms".format(t_off))

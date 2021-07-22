@@ -61,43 +61,30 @@ paras["label"]= label+"_"+connect_I
 # In this experiment run without PNs, LNs
 paras["n"]["PNs"]= 0
 paras["n"]["LNs"]= 0
-paras["geoshift"]= 38.0
 
 # Assume a uniform distribution of Hill coefficients inspired by Rospars'
 # work on receptors tiling the space of possible sigmoid responses
-hill_new= True
 
-if hill_new:
-    hill_exp= np.random.uniform(0.95, 1.05, paras["n_glo"])
-    np.save(paras["dirname"]+"/"+label+"_hill",hill_exp)
-else:
-    hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
+hill_exp= np.load(paras["dirname"]+"/"+label+"_hill.npy")
 
-# Generate odors or load previously generated odors from file
-
+# Generate odors 
 odors= []
 # create a permutation that will be applied to both IAA and geosmin
 the_shuffle= np.arange(paras["n_glo"])
 random.shuffle(the_shuffle)
-# Add a "IAA" odour that matches EAG recordings ... use same glo as for "Geosmin"
-sigma= 5
-A= paras["max_A"]/200.0
-act= paras["max_act"]*2
-od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, sigma, A, paras["odor_clip"], act, 0.0, 1e-10, 0.1)
-od[:,0]=od[the_shuffle,0]
+# Add a "IAA" odour 
+od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, paras["IAA_sigma"], paras["IAA_A"], paras["odor_clip"], paras["IAA_act"], 0.0, 1e-10, 1.0)
+od[:,0]= od[the_shuffle,0]
 odors.append(np.copy(od))
 # Add "Geosmin" that is particularly early binding, broad, and low activating
-sigma= 10.0
-A= paras["max_A"]+1.0
-act= paras["min_act"]/3.0
-od= gauss_odor(paras["n_glo"], paras["n_glo"]//2+paras["geoshift"], sigma, A, paras["odor_clip"], act, 0.0, 1e-10, 0.1)
-od[:,0]=od[the_shuffle,0]
+od= gauss_odor(paras["n_glo"], paras["n_glo"]//2+paras["geo_shift"], paras["geo_sigma"], paras["geo_A"], paras["odor_clip"], paras["geo_act"], 0.0, 1e-10, 1.0)
+od[:,0]= od[the_shuffle,0]
 odors.append(np.copy(od))
 odors= np.array(odors)
-np.save(paras["dirname"]+"/"+label+"_odors",odors)
 
 # Now, let's make a protocol where each odor is presented for 3 secs with
 # 3 second breaks and at each of 25 concentration values
+paras["trial_time"]= 12000.0
 protocol= []
 t_off= 3000.0
 base= np.power(10,0.25)
@@ -134,17 +121,16 @@ for c1 in [ 0, 1e-3, 1e-1 ]:
                 "concentration": 0.0
             }
             protocol.append(sub_prot)
-        t_off+= 6000.0;
+        t_off+= paras["trial_time"]
         
 paras["t_total"]= t_off
 print("We are running for a total simulated time of {}ms".format(t_off))
 
 state_bufs, spike_t, spike_ID, ORN_cnts= ALsim(odors, hill_exp, paras, protocol)
 
-d= np.zeros(ORN_cnts.shape[0]//3)
-for i in range(ORN_cnts.shape[0]//3):
-    d[i]= np.sum(ORN_cnts[i*3:(i+1)*3])
-plt.figure()
-plt.bar(np.arange(d.shape[0]),d)
-plt.savefig(paras["dirname"]+"/ORN_summary.png")
-plt.show()
+avgNo= int(paras["trial_time"]/(paras["spk_rec_steps"]*sim.dt))
+d= np.zeros(ORN_cnts.shape[0]//avgNo)
+for i in range(ORN_cnts.shape[0]//avgNo):
+        d[i]= np.sum(ORN_cnts[i*avgNo:(i+1)*avgNo])
+
+np.save(dirname+"_ONR_cnts",d)

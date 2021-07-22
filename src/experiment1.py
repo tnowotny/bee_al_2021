@@ -118,6 +118,7 @@ correl= choose_inh_connectivity(paras,connect_I)
                 
 # Now, let's make a protocol where each odor is presented for 3 secs with
 # 3 second breaks and at each of 25 concentration values
+paras["trial_time"]= 12000.0
 protocol= []
 t_off= 3000.0
 base= np.power(10,0.25)
@@ -138,7 +139,7 @@ for i in range(paras["N_odour"]):
             "concentration": 0.0,
         }
         protocol.append(sub_prot)
-        t_off+= 6000.0;
+        t_off+= paras["trial_time"];
 
 paras["t_total"]= t_off
 print("We are running for a total simulated time of {}ms".format(t_off))

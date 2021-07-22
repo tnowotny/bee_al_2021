@@ -46,13 +46,13 @@ def std_paras():
     paras["sig_A"]= 0.5
     paras["min_A"]= 0.0
     paras["max_A"]= 4.0
-    paras["IAA_sigma"]= 5
+    paras["IAA_sigma"]= 3
     paras["IAA_A"]= 0.8
     paras["IAA_act"]= 0.1
     paras["geo_sigma"]= 10
     paras["geo_A"]= 4.4
-    paras["geo_act"]= 0.0028
-    paras["geo_shift"]= 34
+    paras["geo_act"]= 0.003
+    paras["geo_shift"]= 30
     result = subprocess.run(['git', 'log'], stdout=subprocess.PIPE)
     paras["git_version"]= result.stdout.decode('utf-8').split("\n")[0]
     paras["progress_display"]= True

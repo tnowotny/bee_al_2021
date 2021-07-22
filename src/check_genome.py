@@ -19,6 +19,7 @@ paras["write_to_disk"]= False
 paras["dt"]= sim.dt
 paras["use_spk_rec"]= True
 paras["progress_display"]= True
+paras["trial_time"]= 12000.0
 # Control what to record
 paras["rec_state"]= [
 #    ("ORs", "ra"),
@@ -88,20 +89,19 @@ for c1 in [ 0, 1e-3, 1e-1 ]:
                 "concentration": 0
             }
             protocol.append(sub_prot)
-        t_off+= 6000.0;
+        t_off+= paras["trial_time"];
 
 paras["t_total"]= t_off
 print("We are running for a total simulated time of {}ms".format(t_off))
 
 x= np.array([
-    0.008, 0.008, 0.001, 0.55e-4, 0.2e-4, 5.0e+00, 0.8e+00, 10, 4.4e+00, 3.4e+01 ])
+    0.008, 0.008, 0.001, 0.55e-4, 0.2e-4, 3.0e+00, 0.8e+00, 10, 4.4e+00, 30 ])
 x[:5]= np.log(x[:5])/np.log(10)
 print(x)
 
 paras= set_x(paras,x)
-paras["orn_params"]["g_adapt"]= 0.0015
-paras["ln_params"]["g_adapt"]= 0.0005
 # Generate odors or load previously generated odors from file
+paras["geo_act"]= 0.003 #0.006
 paras["N_odour"]= 2
 odors= []
 od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, paras["IAA_sigma"], paras["IAA_A"], paras["odor_clip"], paras["IAA_act"], 0.0, 1e-10, 1.0)
@@ -113,10 +113,14 @@ odors= np.array(odors)
    
 state_bufs, spike_t, spike_ID, ORN_cnts= ALsim(odors, hill_exp, paras, protocol, lns_gsyn= correl)
 
-avgNo= int(6000.0/(paras["spk_rec_steps"]*sim.dt))
+plt.figure()
+plt.plot(ORN_cnts)
+avgNo= int(paras["trial_time"]/(paras["spk_rec_steps"]*sim.dt))
 d= np.zeros(ORN_cnts.shape[0]//avgNo)
 for i in range(ORN_cnts.shape[0]//avgNo):
         d[i]= np.sum(ORN_cnts[i*avgNo:(i+1)*avgNo])
+
+plt.figure()
 plt.bar(np.arange(d.shape[0]),d)
 plt.savefig("bars.png")
 
@@ -147,15 +151,13 @@ for which, N in zip(["PNs","LNs"], [800, 4000]):
     sno= np.zeros(len(jchoice))
     hst= 3000.0 # half sample time
     cnt= 0
-    lbound= (paras["n_glo"]//2-3*paras["IAA_sigma"])*paras["n"][which]
-    rbound= (paras["n_glo"]//2+3*paras["IAA_sigma"])*paras["n"][which]
     li= 0
     sigma_sdf= 100
     dt_sdf= 1
     lsdfs= []
     gsdfs= []
     for j in jchoice:
-        left= hst+2*j*hst
+        left= hst+j*paras["trial_time"]
         right= left+hst
         while li < len(st) and st[li] < left:
             li+= 1
