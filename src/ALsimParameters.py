@@ -40,7 +40,7 @@ def std_paras():
     paras["odor_clip"]= 0.0
     paras["mean_act"]= 0.02
     paras["sig_act"]= 0.02
-    paras["min_act"]= 0.0028
+    paras["min_act"]= 0.003
     paras["max_act"]= 0.2
     paras["mean_A"]= 1.5
     paras["sig_A"]= 0.5
