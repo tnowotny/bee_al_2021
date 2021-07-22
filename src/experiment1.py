@@ -25,6 +25,7 @@ The overall strength of inhibition is scaled by a command line argument "ino".
 """
 
 paras= std_paras()
+paras["write_to_disk"]= True
 paras["geoshift"]= 38
 if len(sys.argv) < 3:
     print("usage: python experiment1.py <ino> <connect_I: hom/corr0/corr1/cov0/cov1")
@@ -39,7 +40,7 @@ if ino == -100:
 else:
     paras["lns_pns_g"]*= np.power(10,ino)
     paras["lns_lns_g"]*= np.power(10,ino)
-
+    
 # write results into a dir with current date in the name
 timestr = time.strftime("%Y-%m-%d")
 paras["dirname"]= timestr+"-runs"
@@ -53,16 +54,10 @@ paras["use_spk_rec"]= True
 
 # Control what to record
 paras["rec_state"]= [
-#    ("ORs", "ra"),
-#    ("ORNs", "V"),
-#    ("ORNs", "a"),
-#    ("PNs", "V")
 ]
 
 paras["rec_spikes"]= [
-#    "ORNs",
     "PNs",
-#    "LNs"
     ]
 
 label= "run"
@@ -80,10 +75,22 @@ else:
 
 # Generate odors or load previously generated odors from file
 odor_new= True
-paras["N_odour"]= 2
+paras["N_odour"]= 100
 
 if odor_new:
     odors= []
+    # create a permutation that will be applied to both IAA and geosmin
+    the_shuffle= np.arange(paras["n_glo"])
+    random.shuffle(the_shuffle)
+    # Add a "IAA" odour 
+    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, paras["IAA_sigma"], paras["IAA_A"], paras["odor_clip"], paras["IAA_act"], 0.0, 1e-10, 1.0)
+    od[:,0]= od[the_shuffle,0]
+    odors.append(np.copy(od))
+    # Add "Geosmin" that is particularly early binding, broad, and low activating
+    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2+paras["geo_shift"], paras["geo_sigma"], paras["geo_A"], paras["odor_clip"], paras["geo_act"], 0.0, 1e-10, 1.0)
+    od[:,0]= od[the_shuffle,0]
+    odors.append(np.copy(od))
+    # add any remaining random odours
     for i in range(paras["N_odour"]-2):
         sigma= 0
         while sigma < paras["min_sig"]:
@@ -94,23 +101,6 @@ if odor_new:
         od= gauss_odor(paras["n_glo"], 0, sigma, A, paras["odor_clip"], paras["mean_act"], paras["sig_act"],paras["min_act"],paras["max_act"])
         random.shuffle(od[:,0])
         odors.append(np.copy(od))
-    # create a permutation that will be applied to both IAA and geosmin
-    the_shuffle= np.arange(paras["n_glo"])
-    random.shuffle(the_shuffle)
-    # Add a "IAA" odour that matches EAG recordings ... use same glo as for "Geosmin"
-    sigma= 5
-    A= paras["max_A"]/200.0
-    act= paras["max_act"]*2
-    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2, sigma, A, paras["odor_clip"], act, 0.0, 1e-10, 0.1)
-    od[:,0]= od[the_shuffle,0]
-    odors.append(np.copy(od))
-    # Add "Geosmin" that is particularly early binding, broad, and low activating
-    sigma= 10
-    A= paras["max_A"]+1
-    act= paras["min_act"]/3.0
-    od= gauss_odor(paras["n_glo"], paras["n_glo"]//2+paras["geoshift"], sigma, A, paras["odor_clip"], act, 0.0, 1e-10, 0.1)
-    od[:,0]=od[the_shuffle,0]
-    odors.append(np.copy(od))
     odors= np.array(odors)
     np.save(paras["dirname"]+"/"+label+"_odors",odors)
 else:
@@ -122,7 +112,8 @@ correl= choose_inh_connectivity(paras,connect_I)
                 
 # Now, let's make a protocol where each odor is presented for 3 secs with
 # 3 second breaks and at each of 25 concentration values
-paras["protocol"]= []
+paras["trial_time"]= 12000.0
+protocol= []
 t_off= 3000.0
 base= np.power(10,0.25)
 
@@ -134,17 +125,17 @@ for i in range(paras["N_odour"]):
             "ochn": str(0),
             "concentration": 1e-7*np.power(base,c),
         }
-        paras["protocol"].append(sub_prot)
+        protocol.append(sub_prot)
         sub_prot= {
             "t": t_off+3000.0,
             "odor": i,
             "ochn": str(0),
             "concentration": 0.0,
         }
-        paras["protocol"].append(sub_prot)
-        t_off+= 6000.0;
+        protocol.append(sub_prot)
+        t_off+= paras["trial_time"];
 
 paras["t_total"]= t_off
 print("We are running for a total simulated time of {}ms".format(t_off))
 
-state_bufs, spike_t, spike_ID= ALsim(odors, hill_exp, paras, lns_gsyn= correl)
+state_bufs, spike_t, spike_ID, ORN_cnts= ALsim(odors, hill_exp, paras, protocol, lns_gsyn= correl)
