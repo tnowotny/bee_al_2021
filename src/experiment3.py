@@ -46,9 +46,6 @@ paras["use_spk_rec"]= True
 
 # Control what to record
 paras["rec_state"]= [
-#    ("ORs", "ra"),
-#    ("ORNs", "V"),
-#    ("ORNs", "a"),
 ]
 
 paras["rec_spikes"]= [
@@ -127,10 +124,3 @@ paras["t_total"]= t_off
 print("We are running for a total simulated time of {}ms".format(t_off))
 
 state_bufs, spike_t, spike_ID, ORN_cnts= ALsim(odors, hill_exp, paras, protocol)
-
-avgNo= int(paras["trial_time"]/(paras["spk_rec_steps"]*sim.dt))
-d= np.zeros(ORN_cnts.shape[0]//avgNo)
-for i in range(ORN_cnts.shape[0]//avgNo):
-        d[i]= np.sum(ORN_cnts[i*avgNo:(i+1)*avgNo])
-
-np.save(dirname+"_ONR_cnts",d)
