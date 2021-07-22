@@ -4,6 +4,7 @@ The model uses PyGeNN, the Python interface for the GeNN simulator (https://gith
 
 To use this software you will need PyGeNN installed (see http://genn-team.github.io/genn/documentation/4/html/d8/d99/Installation.html#pygenn for instructions).
 There are 5 main python scripts that allow running different investigations of the model.
+
 experiment1.py:
 ---
 This script shoudl be used first as it allows generating new odors and Hill exponents. Thes are saved into binary python data files which can be reused in subsequent runs and in the other scripts.
