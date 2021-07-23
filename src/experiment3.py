@@ -48,8 +48,8 @@ paras["use_spk_rec"]= True
 paras["rec_state"]= [
 ]
 
+paras["rec_ORN_counts"]= True
 paras["rec_spikes"]= [
-    "ORNs",
 ]
 
 label= "run"

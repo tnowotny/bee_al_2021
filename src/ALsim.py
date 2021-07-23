@@ -36,7 +36,7 @@ def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
     ors = model.add_neuron_population("ORs", paras["n_glo"], or_model, paras["or_params"], paras["or_ini"])
     orns = model.add_neuron_population("ORNs", paras["n_glo"]*paras["n"]["ORNs"], adaptive_LIF, paras["orn_params"], paras["orn_ini"])
     if paras["use_spk_rec"]:
-        if "ORNs" in paras["rec_spikes"]:
+        if "ORNs" in paras["rec_spikes"] or paras["rec_ORN_counts"]:
             orns.spike_recording_enabled= True
 
     if paras["n"]["PNs"] > 0:
@@ -150,9 +150,8 @@ def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
     spike_ID= dict()
     ORN_cnts= []
     for pop in paras["rec_spikes"]:
-        if pop != "ORNs":
-            spike_t[pop]= []
-            spike_ID[pop]= []
+        spike_t[pop]= []
+        spike_ID[pop]= []
     
     # Simulate
     prot_pos= 0
@@ -178,40 +177,39 @@ def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
         if paras["use_spk_rec"]:
             if int_t%paras["spk_rec_steps"] == 0:
                 model.pull_recording_buffers_from_device()
+                if paras["rec_ORN_counts"]:
+                    the_pop= model.neuron_populations[pop]
+                    ORN_cnts.append(len(the_pop.spike_recording_data[0]))
                 for pop in paras["rec_spikes"]:
                     the_pop= model.neuron_populations[pop]
-                    if pop == "ORNs":
-                        # only record total spike number
-                        ORN_cnts.append(len(the_pop.spike_recording_data[0]))
-                    else:
-                        spike_t[pop].append(the_pop.spike_recording_data[0])
-                        spike_ID[pop].append(the_pop.spike_recording_data[1])
+                    spike_t[pop].append(the_pop.spike_recording_data[0])
+                    spike_ID[pop].append(the_pop.spike_recording_data[1])
                 if paras["print_messages"]:
                     print("fetched spikes from buffer ... complete")
         else:
+            if paras["rec_ORN_counts"]:
+                the_pop= model.neuron_populations[pop]
+                the_pop.pull_current_spikes_from_device()
+                ORN_cnts.append(the_pop.spike_count[0])
             for pop in paras["rec_spikes"]:
                 the_pop= model.neuron_populations[pop]
                 the_pop.pull_current_spikes_from_device()
-                if pop == "ORNs":
-                    # only record total spike number
-                    ORN_cnts.append(the_pop.spike_count[0])
-                else:
-                    if (the_pop.spike_count[0] > 0):
-                        ln= the_pop.spike_count[0]
-                        spike_t[pop].append(np.copy(model.t*np.ones(ln))) 
-                        spike_ID[pop].append(np.copy(the_pop.spikes[0:ln]))
+                if (the_pop.spike_count[0] > 0):
+                    ln= the_pop.spike_count[0]
+                    spike_t[pop].append(np.copy(model.t*np.ones(ln))) 
+                    spike_ID[pop].append(np.copy(the_pop.spikes[0:ln]))
 
     if state_bufs:
         # only save the time array if anything is being saved
         for p in state_bufs:
             state_bufs[p]= np.vstack(state_bufs[p])
 
+    if paras["rec_ORN_counts"]:
+        ORN_cnts= np.hstack(ORN_cnts)
+        
     for pop in paras["rec_spikes"]:
-        if pop == "ORNs":
-            ORN_cnts= np.hstack(ORN_cnts)
-        else:
-            spike_t[pop]= np.hstack(spike_t[pop])
-            spike_ID[pop]= np.hstack(spike_ID[pop])
+        spike_t[pop]= np.hstack(spike_t[pop])
+        spike_ID[pop]= np.hstack(spike_ID[pop])
             
     if paras["write_to_disk"]:            # Saving results
         if state_bufs:
@@ -221,12 +219,12 @@ def ALsim(odors, hill_exp, paras, protocol, lns_gsyn= None):
             for p in state_bufs:
                 np.save(dirname+paras["label"]+"_"+p, state_bufs[p])
 
+        if paras["rec_ORN_counts"]:
+            np.save(dirname+paras["label"]+"_"+pop+"_spike_counts",ORN_cnts)
+
         for pop in paras["rec_spikes"]:
-            if pop == "ORNs":
-                np.save(dirname+paras["label"]+"_"+pop+"_spike_counts",ORN_cnts)
-            else:
-                np.save(dirname+paras["label"]+"_"+pop+"_spike_t", spike_t[pop])
-                np.save(dirname+paras["label"]+"_"+pop+"_spike_ID", spike_ID[pop])
+            np.save(dirname+paras["label"]+"_"+pop+"_spike_t", spike_t[pop])
+            np.save(dirname+paras["label"]+"_"+pop+"_spike_ID", spike_ID[pop])
     
     return state_bufs, spike_t, spike_ID, ORN_cnts
 

@@ -22,14 +22,10 @@ paras["progress_display"]= True
 paras["trial_time"]= 12000.0
 # Control what to record
 paras["rec_state"]= [
-#    ("ORs", "ra"),
-#    ("ORNs", "V"),
-#    ("ORNs", "a"),
-#    ("PNs", "V")
 ]
 
+paras["rec_ORN_counts"]= True
 paras["rec_spikes"]= [
-    "ORNs",
     "PNs",
     "LNs"
     ]

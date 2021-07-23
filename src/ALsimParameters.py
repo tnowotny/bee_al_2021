@@ -57,4 +57,6 @@ def std_paras():
     paras["git_version"]= result.stdout.decode('utf-8').split("\n")[0]
     paras["progress_display"]= True
     paras["print_messages"]= True
+    paras["write_to_disk"]= True
+    paras["rec_ORN_counts"]= False
     return paras
