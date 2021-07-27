@@ -26,7 +26,6 @@ The overall strength of inhibition is scaled by a command line argument "ino".
 
 paras= std_paras()
 paras["write_to_disk"]= True
-paras["geoshift"]= 38
 if len(sys.argv) < 3:
     print("usage: python experiment1.py <ino> <connect_I: hom/corr0/corr1/cov0/cov1")
     exit()
