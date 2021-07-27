@@ -72,7 +72,7 @@ odors= []
 # glomeruli for reproducibility/ definitiveness
 abase= 2.0
 bbase= np.power(10.0, 0.2)
-for A in range(3):
+for A in range(-1,2):
     for a in range(-1,2):
         for b in range(-5,6):
             od= gauss_odor(paras["n_glo"], paras["n_glo"]//2+paras["geo_shift"], np.power(bbase,b)*paras["geo_sigma"], A+paras["geo_A"], paras["odor_clip"], np.power(abase,a)*paras["geo_act"], 0.0, 1e-10, 1.0)
@@ -80,7 +80,7 @@ for A in range(3):
             odors.append(np.copy(od))
 paras["N_odour"]= len(odors)
 odors= np.array(odors)
-np.save(paras["dirname"]+"/"+label+"scan_breadth_odors",odors)
+np.save(paras["dirname"]+"/"+label+"_odors",odors)
 
 # define the inhibitory connectivity pattern in the antennal lobe
 correl= choose_inh_connectivity(paras,connect_I)
