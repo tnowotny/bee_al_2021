@@ -20,7 +20,7 @@ We generate N_odour-1 odours randomly with the following properties:
 3. The activation kp2 is homogeneous across glomeruli and is given by zeta, an 
    essentially Gaussian random variable
 We then add one odour, "geosmin", which has high sensitivity, broad profile, but low activation kp2
-Then, all odours are presented at 25 concentrations for 3s each trial, with 3 second pauses.
+Then, all odours are presented at 25 concentrations for 3s each trial, with 9 second pauses.
 The overall strength of inhibition is scaled by a command line argument "ino".
 """
 
